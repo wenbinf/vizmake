@@ -63,9 +63,3 @@ also visualizes the information of each referenced variable during build time,
 including the variable value, the source of variable definition, and other
 variables referenced by a variable.
 
-## Demo
-
-Here's a demo for the visualization of building GNU `make` itself:
-
-http://wenbinf.github.com/vizmake/demo/
-
