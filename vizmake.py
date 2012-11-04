@@ -361,6 +361,7 @@ import glob
 import signal
 import SimpleHTTPServer
 import SocketServer
+import time
 
 #
 # The core class of vizmake
@@ -631,22 +632,25 @@ class VizMake:
         """
         Set up a simple web server for visualization
         """
-        print "Please visit this URL in your web browser:"
-        print "    http://localhost:8000"
-        print "    (Press ctrl+c to exit)"
         os.chdir("%svizengine" % self.virtual_working_dir)
         httpd = None
-        try:
-            #os.system("python -m SimpleHTTPServer")
-            Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-            httpd = SocketServer.TCPServer(("", 8000), Handler)
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            httpd.server_close()
-            httpd.shutdown()
-            httpd.socket.close()
-            print "Exit visualization"
-
+        print "Starting web server for visualization ..."
+        while True:
+            try:
+                Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+                httpd = SocketServer.TCPServer(("", 8000), Handler)
+                print "Please visit this URL in your web browser:"
+                print "    http://localhost:8000"
+                print "    (Press ctrl+c to exit)"
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                httpd.shutdown()
+                print "Exit visualization"
+                break
+            except:
+                print "Failed to listen to port 8000, wait 5 seconds ..."
+                time.sleep(5)
+                continue
 #
 # Main
 #======
