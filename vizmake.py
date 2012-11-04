@@ -649,7 +649,11 @@ class VizMake:
                 break
             except:
                 print "Failed to listen to port 8000, wait 5 seconds ..."
-                time.sleep(5)
+                try:
+                    time.sleep(5)
+                except KeyboardInterrupt:
+                    print "Failed to listen to port 8000. Please check whether this port is being used."
+                    break
                 continue
 #
 # Main
