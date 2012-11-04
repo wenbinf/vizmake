@@ -60,3 +60,10 @@ This page visualizes the lines in a Makefile that reference some variables.  It
 also visualizes the information of each referenced variable during build time,
 including the variable value, the source of variable definition, and other
 variables referenced by a variable.
+
+## Demo
+
+Here's a demo for the visualization of building GNU `make` itself:
+
+			 https://raw.github.com/wenbinf/vizmake/master/doc/demo
+
