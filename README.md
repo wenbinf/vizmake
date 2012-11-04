@@ -65,5 +65,5 @@ variables referenced by a variable.
 
 Here's a demo for the visualization of building GNU `make` itself:
 
-			 https://raw.github.com/wenbinf/vizmake/master/doc/demo
+http://wenbinf.github.com/vizmake/demo/
 
