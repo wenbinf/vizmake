@@ -1599,8 +1599,10 @@ new_job (struct file *file)
          IN gets ahead of OUT.  */
 
       in = out = cmds->command_lines[i];
+
       vprint("CMD---%s/%s---%lu---%s", starting_directory, 
              cmds->fileinfo.filenm, cmds->fileinfo.lineno+i, in);
+
       while ((ref = strchr (in, '$')) != 0)
         {
           ++ref;    /* Move past the $.  */
@@ -2087,14 +2089,18 @@ exec_command (char **argv, char **envp)
 
   char buf[1024];
   buf[0] = '\0';
-  for (i = 0; argv[i]; i++)
-    snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  for (i = 0; argv[i]; i++) {
+    strncat(buf, argv[i], 1024);
+    strncat(buf, " ", 1024);
+    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  }
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
   debugfp = fopen(logfile, "w");
   vprint("PARENT---%d", getppid());
   vprint("EXE---%d---%s", getppid(), buf);
 	fflush(debugfp);
-	fclose(debugfp);
+	// fclose(debugfp);
+
   execve (argv[0], argv, envp);
   perror_with_name ("execve: ", argv[0]);
   _exit (EXIT_FAILURE);
@@ -2184,18 +2190,23 @@ exec_command (char **argv, char **envp)
 
   /* Run the program.  */
   environ = envp;
+
   char buf[1024];
   buf[0]='\0';
   int i;
-  for (i = 0; argv[i]; i++)
-    snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  for (i = 0; argv[i]; i++) {
+    strncat(buf, argv[i], 1024);
+    strncat(buf, " ", 1024);
+    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  }
   char logfile[256];
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
   debugfp = fopen(logfile, "w");
   vprint("PARENT---%d", getppid());
   vprint("EXE---%d---%s", getppid(), buf);
 	fflush(debugfp);
-	fclose(debugfp);
+	// fclose(debugfp);
+
   execvp (argv[0], argv);
 
 # endif /* !__EMX__ */
@@ -2265,14 +2276,18 @@ exec_command (char **argv, char **envp)
 
         char buf[1024];
         buf[0]='\0';
-        for (i = 0; argv[i]; i++)
-          snprintf(buf, 1024, "%s %s", buf, argv[i]);
+        for (i = 0; argv[i]; i++) {
+          strncat(buf, argv[i], 1024);
+          strncat(buf, " ", 1024);
+          // snprintf(buf, 1024, "%s %s", buf, argv[i]);
+        }
         snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
         debugfp = fopen(logfile, "w");
         vprint("PARENT---%d", getppid());
         vprint("EXE---%d---%s", getppid(), buf);
+
 				fflush(debugfp);
-				fclose(debugfp);
+				// fclose(debugfp);
         execvp (shell, new_argv);
 # endif
         if (errno == ENOENT)

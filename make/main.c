@@ -3296,7 +3296,11 @@ void open_log(char** argv) {
 	char cmdline[1024];
 	cmdline[0] = '\0';
 	int i;
-	for (i = 0; argv[i]; i++)
-		snprintf(cmdline, 1024, "%s %s", cmdline, argv[i]);
+	for (i = 0; argv[i]; i++) {
+    strncat(cmdline, argv[i], 1024);
+    strncat(cmdline, " ", 1024);
+    //		snprintf(cmdline, 1024, "%s %s", cmdline, argv[i]);
+  }
+
 	vprint("MAKE_EXE---%s", cmdline);
 }

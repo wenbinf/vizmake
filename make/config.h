@@ -20,10 +20,10 @@
 
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
-/* #undef ENABLE_NLS */
+#define ENABLE_NLS 1
 
 /* Use high resolution file timestamps if nonzero. */
-#define FILE_TIMESTAMP_HI_RES 0
+#define FILE_TIMESTAMP_HI_RES 1
 
 /* Define to 1 if the `getloadavg' function needs to be run setuid or setgid.
    */
@@ -46,11 +46,11 @@
 /* #undef HAVE_CASE_INSENSITIVE_FS */
 
 /* Define to 1 if you have the clock_gettime function. */
-/* #undef HAVE_CLOCK_GETTIME */
+#define HAVE_CLOCK_GETTIME 1
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
-/* #undef HAVE_DCGETTEXT */
+#define HAVE_DCGETTEXT 1
 
 /* Define to 1 if you have the declaration of `bsd_signal', and to 0 if you
    don't. */
@@ -62,7 +62,7 @@
 
 /* Define to 1 if you have the declaration of `_sys_siglist', and to 0 if you
    don't. */
-#define HAVE_DECL__SYS_SIGLIST 0
+#define HAVE_DECL__SYS_SIGLIST 1
 
 /* Define to 1 if you have the declaration of `__sys_siglist', and to 0 if you
    don't. */
@@ -112,13 +112,13 @@
 #define HAVE_GETRLIMIT 1
 
 /* Define if the GNU gettext() function is already present or preinstalled. */
-/* #undef HAVE_GETTEXT */
+#define HAVE_GETTEXT 1
 
 /* Define to 1 if you have a standard gettimeofday function */
 #define HAVE_GETTIMEOFDAY 1
 
 /* Define if you have the iconv() function. */
-#define HAVE_ICONV 1
+/* #undef HAVE_ICONV */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -316,7 +316,7 @@
 #define HAVE_WORKING_VFORK 1
 
 /* Build host information. */
-#define MAKE_HOST "x86_64-apple-darwin11.4.2"
+#define MAKE_HOST "x86_64-unknown-linux-gnu"
 
 /* Define to 1 to enable job server support in GNU make. */
 #define MAKE_JOBSERVER 1
@@ -382,7 +382,7 @@
 #define STDC_HEADERS 1
 
 /* Define if struct stat contains a nanoseconds field */
-/* #undef ST_MTIM_NSEC */
+#define ST_MTIM_NSEC tv_nsec
 
 /* Define to 1 on System V Release 4. */
 /* #undef SVR4 */
@@ -452,9 +452,6 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 /* #undef pid_t */
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-/* #undef size_t */
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 /* #undef uid_t */

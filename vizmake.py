@@ -642,6 +642,7 @@ class VizMake:
             httpd = SocketServer.TCPServer(("", 8000), Handler)
             httpd.serve_forever()
         except KeyboardInterrupt:
+            httpd.server_close()
             httpd.shutdown()
             httpd.socket.close()
             print "Exit visualization"

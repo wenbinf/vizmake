@@ -217,7 +217,8 @@ reference_variable (char *o, const char *name, unsigned int length)
   /* If there's no variable by that name or it has no value, stop now.  */
   if (v == 0 || (*v->value == '\0' && !v->append)) {
     if (!v) {
-      char buf[1024];
+      char buf[4096];
+      if (length > 4096) length = 4095;
       strncpy(buf, name, length);
       buf[length] = '\0';
       vprint("VAR REF END---UNDEFINED---%s", buf);
@@ -447,9 +448,11 @@ variable_expand_string (char *line, const char *string, long length)
               /* This is an ordinary variable reference.
                  Look up the value of the variable.  */
               ++level;
-              char buf[1024];
-              strncpy(buf, beg, end - beg);
-              buf[end - beg] = '\0';
+              char buf[4096];
+              size_t len = end - beg;
+              if (len > 4096) len = 4095;
+              strncpy(buf, beg, len);
+              buf[len] = '\0';
               vprint("VAR REF BEGIN---%s---%d", buf, level);
               o = reference_variable (o, beg, end - beg);
               --level;
