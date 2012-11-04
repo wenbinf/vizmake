@@ -13,6 +13,8 @@ Current implementation supports:
   a referenced variable during build time.
 * Viewing what commands are actually invoked during build time.
 
+I've tested vizmake on Mac OS X and Red Hat Linux Enterprise 6.
+
 ## Installation and Usage
 
 Let $(VIZMAKE) be the path of the root directory of vizmake project.
