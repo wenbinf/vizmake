@@ -1,20 +1,20 @@
 /* Job execution and handling for GNU Make.
-Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-2010 Free Software Foundation, Inc.
-This file is part of GNU Make.
+   Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
+   This file is part of GNU Make.
 
-GNU Make is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
+   GNU Make is free software; you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation; either version 3 of the License, or (at your option) any later
+   version.
 
-GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with
+   this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "make.h"
 
@@ -119,13 +119,13 @@ static void vmsWaitForChildren (int *);
 #endif
 
 #ifdef HAVE_WAITPID
-# define WAIT_NOHANG(status)	waitpid (-1, (status), WNOHANG)
-#else	/* Don't have waitpid.  */
+# define WAIT_NOHANG(status)  waitpid (-1, (status), WNOHANG)
+#else /* Don't have waitpid.  */
 # ifdef HAVE_WAIT3
 #  ifndef wait3
 extern int wait3 ();
 #  endif
-#  define WAIT_NOHANG(status)	wait3 ((status), WNOHANG, (struct rusage *) 0)
+#  define WAIT_NOHANG(status) wait3 ((status), WNOHANG, (struct rusage *) 0)
 # endif /* Have wait3.  */
 #endif /* Have waitpid.  */
 
@@ -133,7 +133,7 @@ extern int wait3 ();
 int wait ();
 #endif
 
-#ifndef	HAVE_UNION_WAIT
+#ifndef HAVE_UNION_WAIT
 
 # define WAIT_T int
 
@@ -153,7 +153,7 @@ int wait ();
 #  define WIFEXITED(x) (WTERMSIG (x) == 0)
 # endif
 
-#else	/* Have `union wait'.  */
+#else /* Have `union wait'.  */
 
 # define WAIT_T union wait
 # ifndef WTERMSIG
@@ -172,7 +172,7 @@ int wait ();
 #  define WIFEXITED(x) (WTERMSIG(x) == 0)
 # endif
 
-#endif	/* Don't have `union wait'.  */
+#endif  /* Don't have `union wait'.  */
 
 #if !defined(HAVE_UNISTD_H) && !defined(WINDOWS32)
 int dup2 ();
@@ -194,7 +194,7 @@ pid2str (pid_t pid)
   static char pidstring[100];
 #if defined(WINDOWS32) && (__GNUC__ > 3 || _MSC_VER > 1300)
   /* %Id is only needed for 64-builds, which were not supported by
-      older versions of Windows compilers.  */
+     older versions of Windows compilers.  */
   sprintf (pidstring, "%Id", pid);
 #else
   sprintf (pidstring, "%lu", (unsigned long) pid);
@@ -419,12 +419,12 @@ is_bourne_compatible_shell (const char *path)
     len = strlen(unix_shells[i]);
 #if defined(WINDOWS32) || defined(__MSDOS__)
     if ((strncasecmp (name, unix_shells[i], len) == 0) &&
-      (strlen(name) >= len && (name[len] == '\0' || name[len] == '.')))
+        (strlen(name) >= len && (name[len] == '\0' || name[len] == '.')))
 #else
-    if ((strncmp (name, unix_shells[i], len) == 0) &&
-      (strlen(name) >= len && name[len] == '\0'))
+      if ((strncmp (name, unix_shells[i], len) == 0) &&
+          (strlen(name) >= len && name[len] == '\0'))
 #endif
-	return 1; /* a known unix-style shell */
+        return 1; /* a known unix-style shell */
   }
 
   /* if not on the list, assume it's not a Bourne-like shell */
@@ -445,19 +445,19 @@ child_error (const char *target_name,
 
 #ifdef VMS
   if (!(exit_code & 1))
-      error (NILF,
-             (ignored ? _("*** [%s] Error 0x%x (ignored)")
-              : _("*** [%s] Error 0x%x")),
-             target_name, exit_code);
+    error (NILF,
+           (ignored ? _("*** [%s] Error 0x%x (ignored)")
+            : _("*** [%s] Error 0x%x")),
+           target_name, exit_code);
 #else
   if (exit_sig == 0)
     error (NILF, ignored ? _("[%s] Error %d (ignored)") :
-	   _("*** [%s] Error %d"),
-	   target_name, exit_code);
+           _("*** [%s] Error %d"),
+           target_name, exit_code);
   else
     error (NILF, "*** [%s] %s%s",
-	   target_name, strsignal (exit_sig),
-	   coredump ? _(" (core dumped)") : "");
+           target_name, strsignal (exit_sig),
+           coredump ? _(" (core dumped)") : "");
 #endif /* VMS */
 }
 
@@ -491,7 +491,7 @@ child_handler (int sig UNUSED)
 #endif
 
   /* This causes problems if the SIGCHLD interrupts a printf().
-  DB (DB_JOBS, (_("Got a SIGCHLD; %u unreaped children.\n"), dead_children));
+     DB (DB_JOBS, (_("Got a SIGCHLD; %u unreaped children.\n"), dead_children));
   */
 }
 
@@ -521,9 +521,9 @@ reap_children (int block, int err)
 
   /* As long as:
 
-       We have at least one child outstanding OR a shell function in progress,
-         AND
-       We're blocking for a complete child OR there are more children to reap
+     We have at least one child outstanding OR a shell function in progress,
+     AND
+     We're blocking for a complete child OR there are more children to reap
 
      we'll keep reaping children.  */
 
@@ -539,113 +539,118 @@ reap_children (int block, int err)
       int dontcare;
 
       if (err && block)
-	{
+        {
           static int printed = 0;
 
-	  /* We might block for a while, so let the user know why.
+          /* We might block for a while, so let the user know why.
              Only print this message once no matter how many jobs are left.  */
-	  fflush (stdout);
+          fflush (stdout);
           if (!printed)
             error (NILF, _("*** Waiting for unfinished jobs...."));
           printed = 1;
-	}
+        }
 
       /* We have one less dead child to reap.  As noted in
-	 child_handler() above, this count is completely unimportant for
-	 all modern, POSIX-y systems that support wait3() or waitpid().
-	 The rest of this comment below applies only to early, broken
-	 pre-POSIX systems.  We keep the count only because... it's there...
+         child_handler() above, this count is completely unimportant for
+         all modern, POSIX-y systems that support wait3() or waitpid().
+         The rest of this comment below applies only to early, broken
+         pre-POSIX systems.  We keep the count only because... it's there...
 
-	 The test and decrement are not atomic; if it is compiled into:
-		register = dead_children - 1;
-		dead_children = register;
-	 a SIGCHLD could come between the two instructions.
-	 child_handler increments dead_children.
-	 The second instruction here would lose that increment.  But the
-	 only effect of dead_children being wrong is that we might wait
-	 longer than necessary to reap a child, and lose some parallelism;
-	 and we might print the "Waiting for unfinished jobs" message above
-	 when not necessary.  */
+         The test and decrement are not atomic; if it is compiled into:
+         register = dead_children - 1;
+         dead_children = register;
+         a SIGCHLD could come between the two instructions.
+         child_handler increments dead_children.
+         The second instruction here would lose that increment.  But the
+         only effect of dead_children being wrong is that we might wait
+         longer than necessary to reap a child, and lose some parallelism;
+         and we might print the "Waiting for unfinished jobs" message above
+         when not necessary.  */
 
       if (dead_children > 0)
-	--dead_children;
+        --dead_children;
 
       any_remote = 0;
       any_local = shell_function_pid != 0;
       for (c = children; c != 0; c = c->next)
-	{
-	  any_remote |= c->remote;
-	  any_local |= ! c->remote;
-	  DB (DB_JOBS, (_("Live child %p (%s) PID %s %s\n"),
+        {
+          any_remote |= c->remote;
+          any_local |= ! c->remote;
+          DB (DB_JOBS, (_("Live child %p (%s) PID %s %s\n"),
                         c, c->file->name, pid2str (c->pid),
                         c->remote ? _(" (remote)") : ""));
 #ifdef VMS
-	  break;
+          break;
 #endif
-	}
+        }
 
       /* First, check for remote children.  */
-      if (any_remote)
-	pid = remote_status (&exit_code, &exit_sig, &coredump, 0);
+      if (any_remote) {
+        pid = remote_status (&exit_code, &exit_sig, &coredump, 0);
+
+
+      }
       else
-	pid = 0;
+        pid = 0;
 
       if (pid > 0)
-	/* We got a remote child.  */
-	remote = 1;
+        /* We got a remote child.  */
+        remote = 1;
       else if (pid < 0)
-	{
+        {
           /* A remote status command failed miserably.  Punt.  */
-	remote_status_lose:
-	  pfatal_with_name ("remote_status");
-	}
+        remote_status_lose:
+          pfatal_with_name ("remote_status");
+        }
       else
-	{
-	  /* No remote children.  Check for local children.  */
+        {
+          /* No remote children.  Check for local children.  */
 #if !defined(__MSDOS__) && !defined(_AMIGA) && !defined(WINDOWS32)
-	  if (any_local)
-	    {
+          if (any_local)
+            {
 #ifdef VMS
-	      vmsWaitForChildren (&status);
-	      pid = c->pid;
+              vmsWaitForChildren (&status);
+              pid = c->pid;
 #else
 #ifdef WAIT_NOHANG
-	      if (!block)
-		pid = WAIT_NOHANG (&status);
-	      else
+              if (!block)
+                pid = WAIT_NOHANG (&status);
+              else
 #endif
-		EINTRLOOP(pid, wait (&status));
+                EINTRLOOP(pid, wait (&status));
 #endif /* !VMS */
-	    }
-	  else
-	    pid = 0;
+            }
+          else
+            pid = 0;
 
-	  if (pid < 0)
-	    {
+          if (pid < 0)
+            {
               /* The wait*() failed miserably.  Punt.  */
-	      pfatal_with_name ("wait");
-	    }
-	  else if (pid > 0)
-	    {
-	      /* We got a child exit; chop the status word up.  */
-	      exit_code = WEXITSTATUS (status);
-	      exit_sig = WIFSIGNALED (status) ? WTERMSIG (status) : 0;
-	      coredump = WCOREDUMP (status);
+              pfatal_with_name ("wait");
+            }
+          else if (pid > 0)
+            {
+              /* We got a child exit; chop the status word up.  */
+              exit_code = WEXITSTATUS (status);
+              exit_sig = WIFSIGNALED (status) ? WTERMSIG (status) : 0;
+              coredump = WCOREDUMP (status);
 
               /* If we have started jobs in this second, remove one.  */
               if (job_counter)
                 --job_counter;
-	    }
-	  else
-	    {
-	      /* No local children are dead.  */
+            }
+          else
+            {
+              /* No local children are dead.  */
               reap_more = 0;
 
-	      if (!block || !any_remote)
+              if (!block || !any_remote)
                 break;
 
               /* Now try a blocking wait for a remote child.  */
               pid = remote_status (&exit_code, &exit_sig, &coredump, 1);
+
+
               if (pid < 0)
                 goto remote_status_lose;
               else if (pid == 0)
@@ -654,26 +659,26 @@ reap_children (int block, int err)
 
               /* We got a remote child.  */
               remote = 1;
-	    }
+            }
 #endif /* !__MSDOS__, !Amiga, !WINDOWS32.  */
 
 #ifdef __MSDOS__
-	  /* Life is very different on MSDOS.  */
-	  pid = dos_pid - 1;
-	  status = dos_status;
-	  exit_code = WEXITSTATUS (status);
-	  if (exit_code == 0xff)
-	    exit_code = -1;
-	  exit_sig = WIFSIGNALED (status) ? WTERMSIG (status) : 0;
-	  coredump = 0;
+          /* Life is very different on MSDOS.  */
+          pid = dos_pid - 1;
+          status = dos_status;
+          exit_code = WEXITSTATUS (status);
+          if (exit_code == 0xff)
+            exit_code = -1;
+          exit_sig = WIFSIGNALED (status) ? WTERMSIG (status) : 0;
+          coredump = 0;
 #endif /* __MSDOS__ */
 #ifdef _AMIGA
-	  /* Same on Amiga */
-	  pid = amiga_pid - 1;
-	  status = amiga_status;
-	  exit_code = amiga_status;
-	  exit_sig = 0;
-	  coredump = 0;
+          /* Same on Amiga */
+          pid = amiga_pid - 1;
+          status = amiga_status;
+          exit_code = amiga_status;
+          exit_sig = 0;
+          coredump = 0;
 #endif /* _AMIGA */
 #ifdef WINDOWS32
           {
@@ -728,26 +733,26 @@ reap_children (int block, int err)
             pid = (pid_t) hPID;
           }
 #endif /* WINDOWS32 */
-	}
+        }
 
       /* Check if this is the child of the `shell' function.  */
       if (!remote && pid == shell_function_pid)
-	{
-	  /* It is.  Leave an indicator for the `shell' function.  */
-	  if (exit_sig == 0 && exit_code == 127)
-	    shell_function_completed = -1;
-	  else
-	    shell_function_completed = 1;
-	  break;
-	}
+        {
+          /* It is.  Leave an indicator for the `shell' function.  */
+          if (exit_sig == 0 && exit_code == 127)
+            shell_function_completed = -1;
+          else
+            shell_function_completed = 1;
+          break;
+        }
 
       child_failed = exit_sig != 0 || exit_code != 0;
 
       /* Search for a child matching the deceased one.  */
       lastc = 0;
       for (c = children; c != 0; lastc = c, c = c->next)
-	if (c->remote == remote && c->pid == pid)
-	  break;
+        if (c->remote == remote && c->pid == pid)
+          break;
 
       if (c == 0)
         /* An unknown child died.
@@ -917,7 +922,7 @@ free_child (struct child *child)
 
       EINTRLOOP (r, write (job_fds[1], &token, 1));
       if (r != 1)
-	pfatal_with_name (_("write jobserver"));
+        pfatal_with_name (_("write jobserver"));
 
       DB (DB_JOBS, (_("Released token for child %p (%s).\n"),
                     child, child->file->name));
@@ -932,7 +937,7 @@ free_child (struct child *child)
     {
       register unsigned int i;
       for (i = 0; i < child->file->cmds->ncommand_lines; ++i)
-	free (child->command_lines[i]);
+        free (child->command_lines[i]);
       free (child->command_lines);
     }
 
@@ -940,7 +945,7 @@ free_child (struct child *child)
     {
       register char **ep = child->environment;
       while (*ep != 0)
-	free (*ep++);
+        free (*ep++);
       free (child->environment);
     }
 
@@ -1024,6 +1029,7 @@ set_child_handler_action_flags (int set_handler, int set_alarm)
 static void
 start_job_command (struct child *child)
 {
+  // fprintf(stderr, "start_job_command for %s\n", child->file->name);
 #if !defined(_AMIGA) && !defined(WINDOWS32)
   static int bad_stdin = -1;
 #endif
@@ -1043,7 +1049,7 @@ start_job_command (struct child *child)
   /* Combine the flags parsed for the line itself with
      the flags specified globally for this target.  */
   flags = (child->file->command_flags
-	   | child->file->cmds->lines_flags[child->command_line - 1]);
+           | child->file->cmds->lines_flags[child->command_line - 1]);
 
   p = child->command_ptr;
   child->noerror = ((flags & COMMANDS_NOERROR) != 0);
@@ -1051,13 +1057,13 @@ start_job_command (struct child *child)
   while (*p != '\0')
     {
       if (*p == '@')
-	flags |= COMMANDS_SILENT;
+        flags |= COMMANDS_SILENT;
       else if (*p == '+')
-	flags |= COMMANDS_RECURSE;
+        flags |= COMMANDS_RECURSE;
       else if (*p == '-')
-	child->noerror = 1;
+        child->noerror = 1;
       else if (!isblank ((unsigned char)*p))
-	break;
+        break;
       ++p;
     }
 
@@ -1078,15 +1084,15 @@ start_job_command (struct child *child)
     argv = p;
 #else
     argv = construct_command_argv (p, &end, child->file,
-				   child->file->cmds->lines_flags[child->command_line - 1],
-				   &child->sh_batch_file);
+                                   child->file->cmds->lines_flags[child->command_line - 1],
+                                   &child->sh_batch_file);
 #endif
     if (end == NULL)
       child->command_ptr = NULL;
     else
       {
-	*end++ = '\0';
-	child->command_ptr = end;
+        *end++ = '\0';
+        child->command_ptr = end;
       }
   }
 
@@ -1108,7 +1114,7 @@ start_job_command (struct child *child)
   if (touch_flag && !(flags & COMMANDS_RECURSE))
     {
       /* Go on to the next command.  It might be the recursive one.
-	 We construct ARGV only to find the end of the command line.  */
+         We construct ARGV only to find the end of the command line.  */
 #ifndef VMS
       if (argv)
         {
@@ -1127,15 +1133,15 @@ start_job_command (struct child *child)
 #endif
       /* This line has no commands.  Go to the next.  */
       if (job_next_command (child))
-	start_job_command (child);
+        start_job_command (child);
       else
-	{
-	  /* No more commands.  Make sure we're "running"; we might not be if
+        {
+          /* No more commands.  Make sure we're "running"; we might not be if
              (e.g.) all commands were skipped due to -n.  */
           set_command_state (child->file, cs_running);
-	  child->file->update_status = 0;
-	  notice_finished_file (child->file);
-	}
+          child->file->update_status = 0;
+          notice_finished_file (child->file);
+        }
       return;
     }
 
@@ -1144,7 +1150,7 @@ start_job_command (struct child *child)
      appear.  */
 
   message (0, (just_print_flag || (!(flags & COMMANDS_SILENT) && !silent_flag))
-	   ? "%s" : (char *) 0, p);
+           ? "%s" : (char *) 0, p);
 
   /* Tell update_goal_chain that a command has been started on behalf of
      this target.  It is important that this happens here and not in
@@ -1164,15 +1170,15 @@ start_job_command (struct child *child)
 #if !defined(VMS) && !defined(_AMIGA)
   if (
 #if defined __MSDOS__ || defined (__EMX__)
-      unixy_shell	/* the test is complicated and we already did it */
+      unixy_shell /* the test is complicated and we already did it */
 #else
       (argv[0] && is_bourne_compatible_shell(argv[0]))
 #endif
       && (argv[1] && argv[1][0] == '-'
-	&&
-	    ((argv[1][1] == 'c' && argv[1][2] == '\0')
-	  ||
-	     (argv[1][1] == 'e' && argv[1][2] == 'c' && argv[1][3] == '\0')))
+          &&
+          ((argv[1][1] == 'c' && argv[1][2] == '\0')
+           ||
+           (argv[1][1] == 'e' && argv[1][2] == 'c' && argv[1][3] == '\0')))
       && (argv[2] && argv[2][0] == ':' && argv[2][1] == '\0')
       && argv[3] == NULL)
     {
@@ -1206,20 +1212,20 @@ start_job_command (struct child *child)
   if (bad_stdin == -1)
     {
       /* Make a file descriptor that is the read end of a broken pipe.
-	 This will be used for some children's standard inputs.  */
+         This will be used for some children's standard inputs.  */
       int pd[2];
       if (pipe (pd) == 0)
-	{
-	  /* Close the write side.  */
-	  (void) close (pd[1]);
-	  /* Save the read side.  */
-	  bad_stdin = pd[0];
+        {
+          /* Close the write side.  */
+          (void) close (pd[1]);
+          /* Save the read side.  */
+          bad_stdin = pd[0];
 
-	  /* Set the descriptor to close on exec, so it does not litter any
-	     child's descriptor table.  When it is dup2'd onto descriptor 0,
-	     that descriptor will not close on exec.  */
-	  CLOSE_ON_EXEC (bad_stdin);
-	}
+          /* Set the descriptor to close on exec, so it does not litter any
+             child's descriptor table.  When it is dup2'd onto descriptor 0,
+             that descriptor will not close on exec.  */
+          CLOSE_ON_EXEC (bad_stdin);
+        }
     }
 
 #endif /* !WINDOWS32 && !_AMIGA && !__MSDOS__ */
@@ -1250,21 +1256,22 @@ start_job_command (struct child *child)
     {
       int is_remote, id, used_stdin;
       if (start_remote_job (argv, child->environment,
-			    child->good_stdin ? 0 : bad_stdin,
-			    &is_remote, &id, &used_stdin))
+                            child->good_stdin ? 0 : bad_stdin,
+                            &is_remote, &id, &used_stdin))
         /* Don't give up; remote execution may fail for various reasons.  If
            so, simply run the job locally.  */
-	goto run_local;
+        goto run_local;
       else
-	{
-	  if (child->good_stdin && !used_stdin)
-	    {
-	      child->good_stdin = 0;
-	      good_stdin_used = 0;
-	    }
-	  child->remote = is_remote;
-	  child->pid = id;
-	}
+        {
+          if (child->good_stdin && !used_stdin)
+            {
+              child->good_stdin = 0;
+              good_stdin_used = 0;
+            }
+          child->remote = is_remote;
+          child->pid = id;
+
+        }
     }
   else
 #endif /* !VMS */
@@ -1293,41 +1300,43 @@ start_job_command (struct child *child)
       /* If we aren't running a recursive command and we have a jobserver
          pipe, close it before exec'ing.  */
       if (!(flags & COMMANDS_RECURSE) && job_fds[0] >= 0)
-	{
-	  CLOSE_ON_EXEC (job_fds[0]);
-	  CLOSE_ON_EXEC (job_fds[1]);
-	}
+        {
+          CLOSE_ON_EXEC (job_fds[0]);
+          CLOSE_ON_EXEC (job_fds[1]);
+        }
       if (job_rfd >= 0)
-	CLOSE_ON_EXEC (job_rfd);
+        CLOSE_ON_EXEC (job_rfd);
 
       /* Never use fork()/exec() here! Use spawn() instead in exec_command() */
       child->pid = child_execute_job (child->good_stdin ? 0 : bad_stdin, 1,
                                       argv, child->environment);
+
       if (child->pid < 0)
-	{
-	  /* spawn failed!  */
-	  unblock_sigs ();
-	  perror_with_name ("spawn", "");
-	  goto error;
-	}
+        {
+          /* spawn failed!  */
+          unblock_sigs ();
+          perror_with_name ("spawn", "");
+          goto error;
+        }
 
       /* undo CLOSE_ON_EXEC() after the child process has been started */
       if (!(flags & COMMANDS_RECURSE) && job_fds[0] >= 0)
-	{
-	  fcntl (job_fds[0], F_SETFD, 0);
-	  fcntl (job_fds[1], F_SETFD, 0);
-	}
+        {
+          fcntl (job_fds[0], F_SETFD, 0);
+          fcntl (job_fds[1], F_SETFD, 0);
+        }
       if (job_rfd >= 0)
-	fcntl (job_rfd, F_SETFD, 0);
+        fcntl (job_rfd, F_SETFD, 0);
 
 #else  /* !__EMX__ */
 
       child->pid = vfork ();
-      environ = parent_environ;	/* Restore value child may have clobbered.  */
+
+      environ = parent_environ; /* Restore value child may have clobbered.  */
       if (child->pid == 0)
-	{
-	  /* We are the child side.  */
-	  unblock_sigs ();
+        {
+          /* We are the child side.  */
+          unblock_sigs ();
 
           /* If we aren't running a recursive command and we have a jobserver
              pipe, close it before exec'ing.  */
@@ -1345,21 +1354,21 @@ start_job_command (struct child *child)
             setrlimit (RLIMIT_STACK, &stack_limit);
 #endif
 
-	  child_execute_job (child->good_stdin ? 0 : bad_stdin, 1,
+          child_execute_job (child->good_stdin ? 0 : bad_stdin, 1,
                              argv, child->environment);
-	}
+        }
       else if (child->pid < 0)
-	{
-	  /* Fork failed!  */
-	  unblock_sigs ();
-	  perror_with_name ("vfork", "");
-	  goto error;
-	}
+        {
+          /* Fork failed!  */
+          unblock_sigs ();
+          perror_with_name ("vfork", "");
+          goto error;
+        }
 # endif  /* !__EMX__ */
 #endif /* !VMS */
     }
 
-#else	/* __MSDOS__ or Amiga or WINDOWS32 */
+#else /* __MSDOS__ or Amiga or WINDOWS32 */
 #ifdef __MSDOS__
   {
     int proc_return;
@@ -1373,31 +1382,31 @@ start_job_command (struct child *child)
        call COMMAND.COM when its internal commands are used.  */
     if (execute_by_shell)
       {
-	char *cmdline = argv[0];
-	/* We don't have a way to pass environment to `system',
-	   so we need to save and restore ours, sigh...  */
-	char **parent_environ = environ;
+        char *cmdline = argv[0];
+        /* We don't have a way to pass environment to `system',
+           so we need to save and restore ours, sigh...  */
+        char **parent_environ = environ;
 
-	environ = child->environment;
+        environ = child->environment;
 
-	/* If we have a *real* shell, tell `system' to call
-	   it to do everything for us.  */
-	if (unixy_shell)
-	  {
-	    /* A *real* shell on MSDOS may not support long
-	       command lines the DJGPP way, so we must use `system'.  */
-	    cmdline = argv[2];	/* get past "shell -c" */
-	  }
+        /* If we have a *real* shell, tell `system' to call
+           it to do everything for us.  */
+        if (unixy_shell)
+          {
+            /* A *real* shell on MSDOS may not support long
+               command lines the DJGPP way, so we must use `system'.  */
+            cmdline = argv[2];  /* get past "shell -c" */
+          }
 
-	dos_command_running = 1;
-	proc_return = system (cmdline);
-	environ = parent_environ;
-	execute_by_shell = 0;	/* for the next time */
+        dos_command_running = 1;
+        proc_return = system (cmdline);
+        environ = parent_environ;
+        execute_by_shell = 0; /* for the next time */
       }
     else
       {
-	dos_command_running = 1;
-	proc_return = spawnvpe (P_WAIT, argv[0], argv, child->environment);
+        dos_command_running = 1;
+        proc_return = spawnvpe (P_WAIT, argv[0], argv, child->environment);
       }
 
     /* Need to unblock signals before turning off
@@ -1422,44 +1431,46 @@ start_job_command (struct child *child)
   ++dead_children;
   child->pid = amiga_pid++;
   if (amiga_batch_file)
-  {
-     amiga_batch_file = 0;
-     DeleteFile (amiga_bname);        /* Ignore errors.  */
-  }
-#endif	/* Amiga */
+    {
+      amiga_batch_file = 0;
+      DeleteFile (amiga_bname);        /* Ignore errors.  */
+    }
+#endif  /* Amiga */
 #ifdef WINDOWS32
   {
-      HANDLE hPID;
-      char* arg0;
+    HANDLE hPID;
+    char* arg0;
 
-      /* make UNC paths safe for CreateProcess -- backslash format */
-      arg0 = argv[0];
-      if (arg0 && arg0[0] == '/' && arg0[1] == '/')
-        for ( ; arg0 && *arg0; arg0++)
-          if (*arg0 == '/')
-            *arg0 = '\\';
+    /* make UNC paths safe for CreateProcess -- backslash format */
+    arg0 = argv[0];
+    if (arg0 && arg0[0] == '/' && arg0[1] == '/')
+      for ( ; arg0 && *arg0; arg0++)
+        if (*arg0 == '/')
+          *arg0 = '\\';
 
-      /* make sure CreateProcess() has Path it needs */
-      sync_Path_environment();
+    /* make sure CreateProcess() has Path it needs */
+    sync_Path_environment();
 
-      hPID = process_easy(argv, child->environment);
+    hPID = process_easy(argv, child->environment);
 
-      if (hPID != INVALID_HANDLE_VALUE)
-        child->pid = (pid_t) hPID;
-      else {
-        int i;
-        unblock_sigs();
-        fprintf(stderr,
-                _("process_easy() failed to launch process (e=%ld)\n"),
-                process_last_err(hPID));
-        for (i = 0; argv[i]; i++)
-          fprintf(stderr, "%s ", argv[i]);
-        fprintf(stderr, _("\nCounted %d args in failed launch\n"), i);
-        goto error;
-      }
+    if (hPID != INVALID_HANDLE_VALUE) {
+      child->pid = (pid_t) hPID;
+
+    }
+    else {
+      int i;
+      unblock_sigs();
+      fprintf(stderr,
+              _("process_easy() failed to launch process (e=%ld)\n"),
+              process_last_err(hPID));
+      for (i = 0; argv[i]; i++)
+        fprintf(stderr, "%s ", argv[i]);
+      fprintf(stderr, _("\nCounted %d args in failed launch\n"), i);
+      goto error;
+    }
   }
 #endif /* WINDOWS32 */
-#endif	/* __MSDOS__ or Amiga or WINDOWS32 */
+#endif  /* __MSDOS__ or Amiga or WINDOWS32 */
 
   /* Bump the number of jobs started in this second.  */
   ++job_counter;
@@ -1503,9 +1514,9 @@ start_waiting_job (struct child *c)
   if (!c->remote
       && ((job_slots_used > 0 && load_too_high ())
 #ifdef WINDOWS32
-	  || (process_used_slots () >= MAXIMUM_WAIT_OBJECTS)
+          || (process_used_slots () >= MAXIMUM_WAIT_OBJECTS)
 #endif
-	  ))
+          ))
     {
       /* Put this child on the chain of children waiting for the load average
          to go down.  */
@@ -1522,6 +1533,7 @@ start_waiting_job (struct child *c)
     {
     case cs_running:
       c->next = children;
+
       DB (DB_JOBS, (_("Putting child %p (%s) PID %s%s on the chain.\n"),
                     c, c->file->name, pid2str (c->pid),
                     c->remote ? _(" (remote)") : ""));
@@ -1550,7 +1562,6 @@ start_waiting_job (struct child *c)
 }
 
 /* Create a `struct child' for FILE and start its commands running.  */
-
 void
 new_job (struct file *file)
 {
@@ -1574,101 +1585,103 @@ new_job (struct file *file)
   for (i = 0; i < cmds->ncommand_lines; ++i)
     {
       /* Collapse backslash-newline combinations that are inside variable
-	 or function references.  These are left alone by the parser so
-	 that they will appear in the echoing of commands (where they look
-	 nice); and collapsed by construct_command_argv when it tokenizes.
-	 But letting them survive inside function invocations loses because
-	 we don't want the functions to see them as part of the text.  */
+         or function references.  These are left alone by the parser so
+         that they will appear in the echoing of commands (where they look
+         nice); and collapsed by construct_command_argv when it tokenizes.
+         But letting them survive inside function invocations loses because
+         we don't want the functions to see them as part of the text.  */
 
       char *in, *out, *ref;
 
       /* IN points to where in the line we are scanning.
-	 OUT points to where in the line we are writing.
-	 When we collapse a backslash-newline combination,
-	 IN gets ahead of OUT.  */
+         OUT points to where in the line we are writing.
+         When we collapse a backslash-newline combination,
+         IN gets ahead of OUT.  */
 
       in = out = cmds->command_lines[i];
+      vprint("CMD---%s/%s---%lu---%s", starting_directory, 
+             cmds->fileinfo.filenm, cmds->fileinfo.lineno+i, in);
       while ((ref = strchr (in, '$')) != 0)
-	{
-	  ++ref;		/* Move past the $.  */
+        {
+          ++ref;    /* Move past the $.  */
 
-	  if (out != in)
-	    /* Copy the text between the end of the last chunk
-	       we processed (where IN points) and the new chunk
-	       we are about to process (where REF points).  */
-	    memmove (out, in, ref - in);
+          if (out != in)
+            /* Copy the text between the end of the last chunk
+               we processed (where IN points) and the new chunk
+               we are about to process (where REF points).  */
+            memmove (out, in, ref - in);
 
-	  /* Move both pointers past the boring stuff.  */
-	  out += ref - in;
-	  in = ref;
+          /* Move both pointers past the boring stuff.  */
+          out += ref - in;
+          in = ref;
 
-	  if (*ref == '(' || *ref == '{')
-	    {
-	      char openparen = *ref;
-	      char closeparen = openparen == '(' ? ')' : '}';
-	      int count;
-	      char *p;
+          if (*ref == '(' || *ref == '{')
+            {
+              char openparen = *ref;
+              char closeparen = openparen == '(' ? ')' : '}';
+              int count;
+              char *p;
 
-	      *out++ = *in++;	/* Copy OPENPAREN.  */
-	      /* IN now points past the opening paren or brace.
-		 Count parens or braces until it is matched.  */
-	      count = 0;
-	      while (*in != '\0')
-		{
-		  if (*in == closeparen && --count < 0)
-		    break;
-		  else if (*in == '\\' && in[1] == '\n')
-		    {
-		      /* We have found a backslash-newline inside a
-			 variable or function reference.  Eat it and
-			 any following whitespace.  */
+              *out++ = *in++; /* Copy OPENPAREN.  */
+              /* IN now points past the opening paren or brace.
+                 Count parens or braces until it is matched.  */
+              count = 0;
+              while (*in != '\0')
+                {
+                  if (*in == closeparen && --count < 0)
+                    break;
+                  else if (*in == '\\' && in[1] == '\n')
+                    {
+                      /* We have found a backslash-newline inside a
+                         variable or function reference.  Eat it and
+                         any following whitespace.  */
 
-		      int quoted = 0;
-		      for (p = in - 1; p > ref && *p == '\\'; --p)
-			quoted = !quoted;
+                      int quoted = 0;
+                      for (p = in - 1; p > ref && *p == '\\'; --p)
+                        quoted = !quoted;
 
-		      if (quoted)
-			/* There were two or more backslashes, so this is
-			   not really a continuation line.  We don't collapse
-			   the quoting backslashes here as is done in
-			   collapse_continuations, because the line will
-			   be collapsed again after expansion.  */
-			*out++ = *in++;
-		      else
-			{
-			  /* Skip the backslash, newline and
-			     any following whitespace.  */
-			  in = next_token (in + 2);
+                      if (quoted)
+                        /* There were two or more backslashes, so this is
+                           not really a continuation line.  We don't collapse
+                           the quoting backslashes here as is done in
+                           collapse_continuations, because the line will
+                           be collapsed again after expansion.  */
+                        *out++ = *in++;
+                      else
+                        {
+                          /* Skip the backslash, newline and
+                             any following whitespace.  */
+                          in = next_token (in + 2);
 
-			  /* Discard any preceding whitespace that has
-			     already been written to the output.  */
-			  while (out > ref
-				 && isblank ((unsigned char)out[-1]))
-			    --out;
+                          /* Discard any preceding whitespace that has
+                             already been written to the output.  */
+                          while (out > ref
+                                 && isblank ((unsigned char)out[-1]))
+                            --out;
 
-			  /* Replace it all with a single space.  */
-			  *out++ = ' ';
-			}
-		    }
-		  else
-		    {
-		      if (*in == openparen)
-			++count;
+                          /* Replace it all with a single space.  */
+                          *out++ = ' ';
+                        }
+                    }
+                  else
+                    {
+                      if (*in == openparen)
+                        ++count;
 
-		      *out++ = *in++;
-		    }
-		}
-	    }
-	}
+                      *out++ = *in++;
+                    }
+                }
+            }
+        }
 
       /* There are no more references in this line to worry about.
-	 Copy the remaining uninteresting text to the output.  */
+         Copy the remaining uninteresting text to the output.  */
       if (out != in)
-	memmove (out, in, strlen (in) + 1);
+        memmove (out, in, strlen (in) + 1);
 
       /* Finally, expand the line.  */
       lines[i] = allocated_variable_expand_for_file (cmds->command_lines[i],
-						     file);
+                                                     file);
     }
 
   /* Start the command sequence, record it in a new
@@ -1710,8 +1723,8 @@ new_job (struct file *file)
     while (1)
       {
         char token;
-	int got_token;
-	int saved_errno;
+        int got_token;
+        int saved_errno;
 
         DB (DB_JOBS, ("Need a job token; we %shave children\n",
                       children ? "" : "don't "));
@@ -1767,13 +1780,13 @@ new_job (struct file *file)
           fatal (NILF, "INTERNAL: no children as we go to sleep on read\n");
 
         /* Set interruptible system calls, and read() for a job token.  */
-	set_child_handler_action_flags (1, waiting_jobs != NULL);
-	got_token = read (job_rfd, &token, 1);
-	saved_errno = errno;
-	set_child_handler_action_flags (0, waiting_jobs != NULL);
+        set_child_handler_action_flags (1, waiting_jobs != NULL);
+        got_token = read (job_rfd, &token, 1);
+        saved_errno = errno;
+        set_child_handler_action_flags (0, waiting_jobs != NULL);
 
         /* If we got one, we're done here.  */
-	if (got_token == 1)
+        if (got_token == 1)
           {
             DB (DB_JOBS, (_("Obtained token for child %p (%s).\n"),
                           c, c->file->name));
@@ -1782,7 +1795,7 @@ new_job (struct file *file)
 
         /* If the error _wasn't_ expected (EINTR or EBADF), punt.  Otherwise,
            go back and reap_children(), and try again.  */
-	errno = saved_errno;
+        errno = saved_errno;
         if (errno != EINTR && errno != EBADF)
           pfatal_with_name (_("read jobs pipe"));
         if (errno == EBADF)
@@ -1824,14 +1837,14 @@ job_next_command (struct child *child)
     {
       /* There are no more lines in the expansion of this line.  */
       if (child->command_line == child->file->cmds->ncommand_lines)
-	{
-	  /* There are no more lines to be expanded.  */
-	  child->command_ptr = 0;
-	  return 0;
-	}
+        {
+          /* There are no more lines to be expanded.  */
+          child->command_ptr = 0;
+          return 0;
+        }
       else
-	/* Get the next line to run.  */
-	child->command_ptr = child->command_lines[child->command_line++];
+        /* Get the next line to run.  */
+        child->command_ptr = child->command_lines[child->command_line++];
     }
   return 1;
 }
@@ -1849,29 +1862,29 @@ job_next_command (struct child *child)
    This algorithm was provided by Thomas Riedl <thomas.riedl@siemens.com>,
    who writes:
 
-!      calculate something load-oid and add to the observed sys.load,
-!      so that latter can catch up:
-!      - every job started increases jobctr;
-!      - every dying job decreases a positive jobctr;
-!      - the jobctr value gets zeroed every change of seconds,
-!        after its value*weight_b is stored into the 'backlog' value last_sec
-!      - weight_a times the sum of jobctr and last_sec gets
-!        added to the observed sys.load.
-!
-!      The two weights have been tried out on 24 and 48 proc. Sun Solaris-9
-!      machines, using a several-thousand-jobs-mix of cpp, cc, cxx and smallish
-!      sub-shelled commands (rm, echo, sed...) for tests.
-!      lowering the 'direct influence' factor weight_a (e.g. to 0.1)
-!      resulted in significant excession of the load limit, raising it
-!      (e.g. to 0.5) took bad to small, fast-executing jobs and didn't
-!      reach the limit in most test cases.
-!
-!      lowering the 'history influence' weight_b (e.g. to 0.1) resulted in
-!      exceeding the limit for longer-running stuff (compile jobs in
-!      the .5 to 1.5 sec. range),raising it (e.g. to 0.5) overrepresented
-!      small jobs' effects.
+   !      calculate something load-oid and add to the observed sys.load,
+   !      so that latter can catch up:
+   !      - every job started increases jobctr;
+   !      - every dying job decreases a positive jobctr;
+   !      - the jobctr value gets zeroed every change of seconds,
+   !        after its value*weight_b is stored into the 'backlog' value last_sec
+   !      - weight_a times the sum of jobctr and last_sec gets
+   !        added to the observed sys.load.
+   !
+   !      The two weights have been tried out on 24 and 48 proc. Sun Solaris-9
+   !      machines, using a several-thousand-jobs-mix of cpp, cc, cxx and smallish
+   !      sub-shelled commands (rm, echo, sed...) for tests.
+   !      lowering the 'direct influence' factor weight_a (e.g. to 0.1)
+   !      resulted in significant excession of the load limit, raising it
+   !      (e.g. to 0.5) took bad to small, fast-executing jobs and didn't
+   !      reach the limit in most test cases.
+   !
+   !      lowering the 'history influence' weight_b (e.g. to 0.1) resulted in
+   !      exceeding the limit for longer-running stuff (compile jobs in
+   !      the .5 to 1.5 sec. range),raising it (e.g. to 0.5) overrepresented
+   !      small jobs' effects.
 
- */
+*/
 
 #define LOAD_WEIGHT_A           0.25
 #define LOAD_WEIGHT_B           0.25
@@ -1903,14 +1916,14 @@ load_too_high (void)
       static int lossage = -1;
       /* Complain only once for the same error.  */
       if (lossage == -1 || errno != lossage)
-	{
-	  if (errno == 0)
-	    /* An errno value of zero means getloadavg is just unsupported.  */
-	    error (NILF,
+        {
+          if (errno == 0)
+            /* An errno value of zero means getloadavg is just unsupported.  */
+            error (NILF,
                    _("cannot enforce load limits on this operating system"));
-	  else
-	    perror_with_name (_("cannot enforce load limit: "), "getloadavg");
-	}
+          else
+            perror_with_name (_("cannot enforce load limit: "), "getloadavg");
+        }
       lossage = errno;
       load = 0;
     }
@@ -1960,7 +1973,7 @@ start_waiting_jobs (void)
       waiting_jobs = job->next;
 
       /* Try to start that job.  We break out of the loop as soon
-	 as start_waiting_job puts one back on the waiting list.  */
+         as start_waiting_job puts one back on the waiting list.  */
     }
   while (start_waiting_job (job) && waiting_jobs != 0);
 
@@ -2007,6 +2020,7 @@ child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
 
   /* Run the command.  */
   pid = exec_command (argv, envp);
+
 
   /* Restore stdout/stdin of the parent and close temporary FDs.  */
   if (stdin_fd != 0)
@@ -2070,6 +2084,17 @@ exec_command (char **argv, char **envp)
   signal (SIGCHLD,SIG_IGN);
 #endif
   /* Run the program.  */
+
+  char buf[1024];
+  buf[0] = '\0';
+  for (i = 0; argv[i]; i++)
+    snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
+  debugfp = fopen(logfile, "w");
+  vprint("PARENT---%d", getppid());
+  vprint("EXE---%d---%s", getppid(), buf);
+	fflush(debugfp);
+	fclose(debugfp);
   execve (argv[0], argv, envp);
   perror_with_name ("execve: ", argv[0]);
   _exit (EXIT_FAILURE);
@@ -2094,7 +2119,7 @@ exec_command (char **argv, char **envp)
               _("process_easy() failed to launch process (e=%ld)\n"),
               process_last_err(hPID));
       for (i = 0; argv[i]; i++)
-          fprintf(stderr, "%s ", argv[i]);
+        fprintf(stderr, "%s ", argv[i]);
       fprintf(stderr, _("\nCounted %d args in failed launch\n"), i);
       exit(EXIT_FAILURE);
     }
@@ -2110,24 +2135,24 @@ exec_command (char **argv, char **envp)
       exit_code = process_exit_code(hWaitPID);
 
       if (err)
-          fprintf(stderr, "make (e=%d, rc=%d): %s",
-                  err, exit_code, map_windows32_error_to_string(err));
+        fprintf(stderr, "make (e=%d, rc=%d): %s",
+                err, exit_code, map_windows32_error_to_string(err));
 
       /* cleanup process */
       process_cleanup(hWaitPID);
 
       /* expect to find only last pid, warn about other pids reaped */
       if (hWaitPID == hPID)
-          break;
+        break;
       else
-	{
-	  char *pidstr = xstrdup (pid2str ((pid_t)hWaitPID));
+        {
+          char *pidstr = xstrdup (pid2str ((pid_t)hWaitPID));
 
           fprintf(stderr,
                   _("make reaped child pid %s, still waiting for pid %s\n"),
-		  pidstr, pid2str ((pid_t)hPID));
-	  free (pidstr);
-	}
+                  pidstr, pid2str ((pid_t)hPID));
+          free (pidstr);
+        }
     }
 
   /* return child's exit code as our exit code */
@@ -2147,6 +2172,7 @@ exec_command (char **argv, char **envp)
   /* Run the program.  */
   pid = spawnvpe (P_NOWAIT, argv[0], argv, envp);
 
+
   if (pid >= 0)
     return pid;
 
@@ -2158,6 +2184,18 @@ exec_command (char **argv, char **envp)
 
   /* Run the program.  */
   environ = envp;
+  char buf[1024];
+  buf[0]='\0';
+  int i;
+  for (i = 0; argv[i]; i++)
+    snprintf(buf, 1024, "%s %s", buf, argv[i]);
+  char logfile[256];
+  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+  debugfp = fopen(logfile, "w");
+  vprint("PARENT---%d", getppid());
+  vprint("EXE---%d---%s", getppid(), buf);
+	fflush(debugfp);
+	fclose(debugfp);
   execvp (argv[0], argv);
 
 # endif /* !__EMX__ */
@@ -2169,37 +2207,37 @@ exec_command (char **argv, char **envp)
       break;
     case ENOEXEC:
       {
-	/* The file is not executable.  Try it as a shell script.  */
-	extern char *getenv ();
-	char *shell;
-	char **new_argv;
-	int argc;
+        /* The file is not executable.  Try it as a shell script.  */
+        extern char *getenv ();
+        char *shell;
+        char **new_argv;
+        int argc;
         int i=1;
 
 # ifdef __EMX__
         /* Do not use $SHELL from the environment */
-	struct variable *p = lookup_variable ("SHELL", 5);
-	if (p)
-	  shell = p->value;
+        struct variable *p = lookup_variable ("SHELL", 5);
+        if (p)
+          shell = p->value;
         else
           shell = 0;
 # else
-	shell = getenv ("SHELL");
+        shell = getenv ("SHELL");
 # endif
-	if (shell == 0)
-	  shell = default_shell;
+        if (shell == 0)
+          shell = default_shell;
 
-	argc = 1;
-	while (argv[argc] != 0)
-	  ++argc;
+        argc = 1;
+        while (argv[argc] != 0)
+          ++argc;
 
 # ifdef __EMX__
         if (!unixy_shell)
           ++argc;
 # endif
 
-	new_argv = alloca ((1 + argc + 1) * sizeof (char *));
-	new_argv[0] = shell;
+        new_argv = alloca ((1 + argc + 1) * sizeof (char *));
+        new_argv[0] = shell;
 
 # ifdef __EMX__
         if (!unixy_shell)
@@ -2211,24 +2249,37 @@ exec_command (char **argv, char **envp)
 # endif
 
         new_argv[i] = argv[0];
-	while (argc > 0)
-	  {
-	    new_argv[i + argc] = argv[argc];
-	    --argc;
-	  }
+        while (argc > 0)
+          {
+            new_argv[i + argc] = argv[argc];
+            --argc;
+          }
 
 # ifdef __EMX__
-	pid = spawnvpe (P_NOWAIT, shell, new_argv, envp);
-	if (pid >= 0)
+        pid = spawnvpe (P_NOWAIT, shell, new_argv, envp);
+
+
+        if (pid >= 0)
           break;
 # else
-	execvp (shell, new_argv);
+
+        char buf[1024];
+        buf[0]='\0';
+        for (i = 0; argv[i]; i++)
+          snprintf(buf, 1024, "%s %s", buf, argv[i]);
+        snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+        debugfp = fopen(logfile, "w");
+        vprint("PARENT---%d", getppid());
+        vprint("EXE---%d---%s", getppid(), buf);
+				fflush(debugfp);
+				fclose(debugfp);
+        execvp (shell, new_argv);
 # endif
-	if (errno == ENOENT)
-	  error (NILF, _("%s: Shell program not found"), shell);
-	else
-	  perror_with_name ("execvp: ", shell);
-	break;
+        if (errno == ENOENT)
+          error (NILF, _("%s: Shell program not found"), shell);
+        else
+          perror_with_name ("execvp: ", shell);
+        break;
       }
 
 # ifdef __EMX__
@@ -2286,7 +2337,7 @@ void clean_tmp (void)
 static char **
 construct_command_argv_internal (char *line, char **restp, char *shell,
                                  char *shellflags, char *ifs, int flags,
-				 char **batch_filename_ptr)
+                                 char **batch_filename_ptr)
 {
 #ifdef __MSDOS__
   /* MSDOS supports both the stock DOS shell and ports of Unixy shells.
@@ -2302,30 +2353,30 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
      actually not specific to COMMAND.COM, but to the DJGPP implementation
      of `system'.  In particular:
 
-       The shell wildcard characters are in DOS_CHARS because they will
-       not be expanded if we call the child via `spawnXX'.
+     The shell wildcard characters are in DOS_CHARS because they will
+     not be expanded if we call the child via `spawnXX'.
 
-       The `;' is in DOS_CHARS, because our `system' knows how to run
-       multiple commands on a single line.
+     The `;' is in DOS_CHARS, because our `system' knows how to run
+     multiple commands on a single line.
 
-       DOS_CHARS also include characters special to 4DOS/NDOS, so we
-       won't have to tell one from another and have one more set of
-       commands and special characters.  */
+     DOS_CHARS also include characters special to 4DOS/NDOS, so we
+     won't have to tell one from another and have one more set of
+     commands and special characters.  */
   static char sh_chars_dos[] = "*?[];|<>%^&()";
   static char *sh_cmds_dos[] = { "break", "call", "cd", "chcp", "chdir", "cls",
-				 "copy", "ctty", "date", "del", "dir", "echo",
-				 "erase", "exit", "for", "goto", "if", "md",
-				 "mkdir", "path", "pause", "prompt", "rd",
-				 "rmdir", "rem", "ren", "rename", "set",
-				 "shift", "time", "type", "ver", "verify",
-				 "vol", ":", 0 };
+                                 "copy", "ctty", "date", "del", "dir", "echo",
+                                 "erase", "exit", "for", "goto", "if", "md",
+                                 "mkdir", "path", "pause", "prompt", "rd",
+                                 "rmdir", "rem", "ren", "rename", "set",
+                                 "shift", "time", "type", "ver", "verify",
+                                 "vol", ":", 0 };
 
   static char sh_chars_sh[]  = "#;\"*?[]&|<>(){}$`^";
   static char *sh_cmds_sh[]  = { "cd", "echo", "eval", "exec", "exit", "login",
-				 "logout", "set", "umask", "wait", "while",
-				 "for", "case", "if", ":", ".", "break",
-				 "continue", "export", "read", "readonly",
-				 "shift", "times", "trap", "switch", "unset",
+                                 "logout", "set", "umask", "wait", "while",
+                                 "for", "case", "if", ":", ".", "break",
+                                 "continue", "export", "read", "readonly",
+                                 "shift", "times", "trap", "switch", "unset",
                                  "ulimit", 0 };
 
   char *sh_chars;
@@ -2333,28 +2384,28 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
 #elif defined (__EMX__)
   static char sh_chars_dos[] = "*?[];|<>%^&()";
   static char *sh_cmds_dos[] = { "break", "call", "cd", "chcp", "chdir", "cls",
-				 "copy", "ctty", "date", "del", "dir", "echo",
-				 "erase", "exit", "for", "goto", "if", "md",
-				 "mkdir", "path", "pause", "prompt", "rd",
-				 "rmdir", "rem", "ren", "rename", "set",
-				 "shift", "time", "type", "ver", "verify",
-				 "vol", ":", 0 };
+                                 "copy", "ctty", "date", "del", "dir", "echo",
+                                 "erase", "exit", "for", "goto", "if", "md",
+                                 "mkdir", "path", "pause", "prompt", "rd",
+                                 "rmdir", "rem", "ren", "rename", "set",
+                                 "shift", "time", "type", "ver", "verify",
+                                 "vol", ":", 0 };
 
   static char sh_chars_os2[] = "*?[];|<>%^()\"'&";
   static char *sh_cmds_os2[] = { "call", "cd", "chcp", "chdir", "cls", "copy",
-			     "date", "del", "detach", "dir", "echo",
-			     "endlocal", "erase", "exit", "for", "goto", "if",
-			     "keys", "md", "mkdir", "move", "path", "pause",
-			     "prompt", "rd", "rem", "ren", "rename", "rmdir",
-			     "set", "setlocal", "shift", "start", "time",
-                             "type", "ver", "verify", "vol", ":", 0 };
+                                 "date", "del", "detach", "dir", "echo",
+                                 "endlocal", "erase", "exit", "for", "goto", "if",
+                                 "keys", "md", "mkdir", "move", "path", "pause",
+                                 "prompt", "rd", "rem", "ren", "rename", "rmdir",
+                                 "set", "setlocal", "shift", "start", "time",
+                                 "type", "ver", "verify", "vol", ":", 0 };
 
   static char sh_chars_sh[]  = "#;\"*?[]&|<>(){}$`^~'";
   static char *sh_cmds_sh[]  = { "echo", "cd", "eval", "exec", "exit", "login",
-				 "logout", "set", "umask", "wait", "while",
-				 "for", "case", "if", ":", ".", "break",
-				 "continue", "export", "read", "readonly",
-				 "shift", "times", "trap", "switch", "unset",
+                                 "logout", "set", "umask", "wait", "while",
+                                 "for", "case", "if", ":", ".", "break",
+                                 "continue", "export", "read", "readonly",
+                                 "shift", "times", "trap", "switch", "unset",
                                  0 };
   char *sh_chars;
   char **sh_cmds;
@@ -2362,31 +2413,31 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
 #elif defined (_AMIGA)
   static char sh_chars[] = "#;\"|<>()?*$`";
   static char *sh_cmds[] = { "cd", "eval", "if", "delete", "echo", "copy",
-			     "rename", "set", "setenv", "date", "makedir",
-			     "skip", "else", "endif", "path", "prompt",
-			     "unset", "unsetenv", "version",
-			     0 };
+                             "rename", "set", "setenv", "date", "makedir",
+                             "skip", "else", "endif", "path", "prompt",
+                             "unset", "unsetenv", "version",
+                             0 };
 #elif defined (WINDOWS32)
   static char sh_chars_dos[] = "\"|&<>";
   static char *sh_cmds_dos[] = { "assoc", "break", "call", "cd", "chcp",
-				 "chdir", "cls", "color", "copy", "ctty",
-				 "date", "del", "dir", "echo", "echo.",
-				 "endlocal", "erase", "exit", "for", "ftype",
-				 "goto", "if", "if", "md", "mkdir", "path",
-				 "pause", "prompt", "rd", "rem", "ren",
-				 "rename", "rmdir", "set", "setlocal",
-				 "shift", "time", "title", "type", "ver",
-				 "verify", "vol", ":", 0 };
+                                 "chdir", "cls", "color", "copy", "ctty",
+                                 "date", "del", "dir", "echo", "echo.",
+                                 "endlocal", "erase", "exit", "for", "ftype",
+                                 "goto", "if", "if", "md", "mkdir", "path",
+                                 "pause", "prompt", "rd", "rem", "ren",
+                                 "rename", "rmdir", "set", "setlocal",
+                                 "shift", "time", "title", "type", "ver",
+                                 "verify", "vol", ":", 0 };
   static char sh_chars_sh[] = "#;\"*?[]&|<>(){}$`^";
   static char *sh_cmds_sh[] = { "cd", "eval", "exec", "exit", "login",
-			     "logout", "set", "umask", "wait", "while", "for",
-			     "case", "if", ":", ".", "break", "continue",
-			     "export", "read", "readonly", "shift", "times",
-			     "trap", "switch", "test",
+                                "logout", "set", "umask", "wait", "while", "for",
+                                "case", "if", ":", ".", "break", "continue",
+                                "export", "read", "readonly", "shift", "times",
+                                "trap", "switch", "test",
 #ifdef BATCH_MODE_ONLY_SHELL
-                 "echo",
+                                "echo",
 #endif
-                 0 };
+                                0 };
   char*  sh_chars;
   char** sh_cmds;
 #elif defined(__riscos__)
@@ -2404,7 +2455,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
      WINDOWS32) are compiled with HAVE_DOS_PATHS defined, which uses
      sh_chars_sh[] directly (see below).  */
   static char *sh_chars_sh = sh_chars;
-# endif	 /* HAVE_DOS_PATHS */
+# endif  /* HAVE_DOS_PATHS */
 #endif
   int i;
   char *p;
@@ -2439,17 +2490,17 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
     shell = default_shell;
 #ifdef WINDOWS32
   else if (strcmp (shell, default_shell))
-  {
-    char *s1 = _fullpath (NULL, shell, 0);
-    char *s2 = _fullpath (NULL, default_shell, 0);
+    {
+      char *s1 = _fullpath (NULL, shell, 0);
+      char *s2 = _fullpath (NULL, default_shell, 0);
 
-    slow_flag = strcmp ((s1 ? s1 : ""), (s2 ? s2 : ""));
+      slow_flag = strcmp ((s1 ? s1 : ""), (s2 ? s2 : ""));
 
-    if (s1)
-      free (s1);
-    if (s2)
-      free (s2);
-  }
+      if (s1)
+        free (s1);
+      if (s2)
+        free (s2);
+    }
   if (slow_flag)
     goto slow;
 #else  /* not WINDOWS32 */
@@ -2491,7 +2542,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
   if (ifs != 0)
     for (ap = ifs; *ap != '\0'; ++ap)
       if (*ap != ' ' && *ap != '\t' && *ap != '\n')
-	goto slow;
+        goto slow;
 
   if (shellflags != 0)
     if (shellflags[0] != '-'
@@ -2516,28 +2567,28 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
       assert (ap <= end);
 
       if (instring)
-	{
-	  /* Inside a string, just copy any char except a closing quote
-	     or a backslash-newline combination.  */
-	  if (*p == instring)
-	    {
-	      instring = 0;
-	      if (ap == new_argv[0] || *(ap-1) == '\0')
-		last_argument_was_empty = 1;
-	    }
-	  else if (*p == '\\' && p[1] == '\n')
+        {
+          /* Inside a string, just copy any char except a closing quote
+             or a backslash-newline combination.  */
+          if (*p == instring)
+            {
+              instring = 0;
+              if (ap == new_argv[0] || *(ap-1) == '\0')
+                last_argument_was_empty = 1;
+            }
+          else if (*p == '\\' && p[1] == '\n')
             {
               /* Backslash-newline is handled differently depending on what
                  kind of string we're in: inside single-quoted strings you
                  keep them; in double-quoted strings they disappear.
-	         For DOS/Windows/OS2, if we don't have a POSIX shell,
-		 we keep the pre-POSIX behavior of removing the
-		 backslash-newline.  */
+                 For DOS/Windows/OS2, if we don't have a POSIX shell,
+                 we keep the pre-POSIX behavior of removing the
+                 backslash-newline.  */
               if (instring == '"'
 #if defined (__MSDOS__) || defined (__EMX__) || defined (WINDOWS32)
-		  || !unixy_shell
+                  || !unixy_shell
 #endif
-		  )
+                  )
                 ++p;
               else
                 {
@@ -2545,61 +2596,61 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
                   *(ap++) = *p;
                 }
             }
-	  else if (*p == '\n' && restp != NULL)
-	    {
-	      /* End of the command line.  */
-	      *restp = p;
-	      goto end_of_line;
-	    }
-	  /* Backslash, $, and ` are special inside double quotes.
-	     If we see any of those, punt.
-	     But on MSDOS, if we use COMMAND.COM, double and single
-	     quotes have the same effect.  */
-	  else if (instring == '"' && strchr ("\\$`", *p) != 0 && unixy_shell)
-	    goto slow;
-	  else
-	    *ap++ = *p;
-	}
+          else if (*p == '\n' && restp != NULL)
+            {
+              /* End of the command line.  */
+              *restp = p;
+              goto end_of_line;
+            }
+          /* Backslash, $, and ` are special inside double quotes.
+             If we see any of those, punt.
+             But on MSDOS, if we use COMMAND.COM, double and single
+             quotes have the same effect.  */
+          else if (instring == '"' && strchr ("\\$`", *p) != 0 && unixy_shell)
+            goto slow;
+          else
+            *ap++ = *p;
+        }
       else if (strchr (sh_chars, *p) != 0)
-	/* Not inside a string, but it's a special char.  */
-	goto slow;
+        /* Not inside a string, but it's a special char.  */
+        goto slow;
       else if (one_shell && *p == '\n')
-	/* In .ONESHELL mode \n is a separator like ; or && */
-	goto slow;
+        /* In .ONESHELL mode \n is a separator like ; or && */
+        goto slow;
 #ifdef  __MSDOS__
       else if (*p == '.' && p[1] == '.' && p[2] == '.' && p[3] != '.')
-	/* `...' is a wildcard in DJGPP.  */
-	goto slow;
+        /* `...' is a wildcard in DJGPP.  */
+        goto slow;
 #endif
       else
-	/* Not a special char.  */
-	switch (*p)
-	  {
-	  case '=':
-	    /* Equals is a special character in leading words before the
-	       first word with no equals sign in it.  This is not the case
-	       with sh -k, but we never get here when using nonstandard
-	       shell flags.  */
-	    if (! seen_nonequals && unixy_shell)
-	      goto slow;
-	    word_has_equals = 1;
-	    *ap++ = '=';
-	    break;
+        /* Not a special char.  */
+        switch (*p)
+          {
+          case '=':
+            /* Equals is a special character in leading words before the
+               first word with no equals sign in it.  This is not the case
+               with sh -k, but we never get here when using nonstandard
+               shell flags.  */
+            if (! seen_nonequals && unixy_shell)
+              goto slow;
+            word_has_equals = 1;
+            *ap++ = '=';
+            break;
 
-	  case '\\':
-	    /* Backslash-newline has special case handling, ref POSIX.
+          case '\\':
+            /* Backslash-newline has special case handling, ref POSIX.
                We're in the fastpath, so emulate what the shell would do.  */
-	    if (p[1] == '\n')
-	      {
-		/* Throw out the backslash and newline.  */
+            if (p[1] == '\n')
+              {
+                /* Throw out the backslash and newline.  */
                 ++p;
 
                 /* If there's nothing in this argument yet, skip any
                    whitespace before the start of the next word.  */
                 if (ap == new_argv[i])
                   p = next_token (p + 1) - 1;
-	      }
-	    else if (p[1] != '\0')
+              }
+            else if (p[1] != '\0')
               {
 #ifdef HAVE_DOS_PATHS
                 /* Only remove backslashes before characters special to Unixy
@@ -2629,49 +2680,49 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
                 /* Copy and skip the following char.  */
                 *ap++ = *++p;
               }
-	    break;
+            break;
 
-	  case '\'':
-	  case '"':
-	    instring = *p;
-	    break;
+          case '\'':
+          case '"':
+            instring = *p;
+            break;
 
-	  case '\n':
-	    if (restp != NULL)
-	      {
-		/* End of the command line.  */
-		*restp = p;
-		goto end_of_line;
-	      }
-	    else
-	      /* Newlines are not special.  */
-	      *ap++ = '\n';
-	    break;
+          case '\n':
+            if (restp != NULL)
+              {
+                /* End of the command line.  */
+                *restp = p;
+                goto end_of_line;
+              }
+            else
+              /* Newlines are not special.  */
+              *ap++ = '\n';
+            break;
 
-	  case ' ':
-	  case '\t':
-	    /* We have the end of an argument.
-	       Terminate the text of the argument.  */
-	    *ap++ = '\0';
-	    new_argv[++i] = ap;
-	    last_argument_was_empty = 0;
+          case ' ':
+          case '\t':
+            /* We have the end of an argument.
+               Terminate the text of the argument.  */
+            *ap++ = '\0';
+            new_argv[++i] = ap;
+            last_argument_was_empty = 0;
 
-	    /* Update SEEN_NONEQUALS, which tells us if every word
-	       heretofore has contained an `='.  */
-	    seen_nonequals |= ! word_has_equals;
-	    if (word_has_equals && ! seen_nonequals)
-	      /* An `=' in a word before the first
-		 word without one is magical.  */
-	      goto slow;
-	    word_has_equals = 0; /* Prepare for the next word.  */
+            /* Update SEEN_NONEQUALS, which tells us if every word
+               heretofore has contained an `='.  */
+            seen_nonequals |= ! word_has_equals;
+            if (word_has_equals && ! seen_nonequals)
+              /* An `=' in a word before the first
+                 word without one is magical.  */
+              goto slow;
+            word_has_equals = 0; /* Prepare for the next word.  */
 
-	    /* If this argument is the command name,
-	       see if it is a built-in shell command.
-	       If so, have the shell handle it.  */
-	    if (i == 1)
-	      {
-		register int j;
-		for (j = 0; sh_cmds[j] != 0; ++j)
+            /* If this argument is the command name,
+               see if it is a built-in shell command.
+               If so, have the shell handle it.  */
+            if (i == 1)
+              {
+                register int j;
+                for (j = 0; sh_cmds[j] != 0; ++j)
                   {
                     if (streq (sh_cmds[j], new_argv[0]))
                       goto slow;
@@ -2682,16 +2733,16 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
                       goto slow;
 # endif
                   }
-	      }
+              }
 
-	    /* Ignore multiple whitespace chars.  */
-	    p = next_token (p) - 1;
-	    break;
+            /* Ignore multiple whitespace chars.  */
+            p = next_token (p) - 1;
+            break;
 
-	  default:
-	    *ap++ = *p;
-	    break;
-	  }
+          default:
+            *ap++ = *p;
+            break;
+          }
     }
  end_of_line:
 
@@ -2710,8 +2761,8 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
     {
       register int j;
       for (j = 0; sh_cmds[j] != 0; ++j)
-	if (streq (sh_cmds[j], new_argv[0]))
-	  goto slow;
+        if (streq (sh_cmds[j], new_argv[0]))
+          goto slow;
     }
 
   if (new_argv[0] == 0)
@@ -2735,7 +2786,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
     }
 
 #ifdef __MSDOS__
-  execute_by_shell = 1;	/* actually, call `system' if shell isn't unixy */
+  execute_by_shell = 1; /* actually, call `system' if shell isn't unixy */
 #endif
 
 #ifdef _AMIGA
@@ -2748,24 +2799,24 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
 
     ptr = line;
     for (dptr=buffer; *ptr; )
-    {
-      if (*ptr == '\\' && ptr[1] == '\n')
-	ptr += 2;
-      else if (*ptr == '@') /* Kludge: multiline commands */
       {
-	ptr += 2;
-	*dptr++ = '\n';
+        if (*ptr == '\\' && ptr[1] == '\n')
+          ptr += 2;
+        else if (*ptr == '@') /* Kludge: multiline commands */
+          {
+            ptr += 2;
+            *dptr++ = '\n';
+          }
+        else
+          *dptr++ = *ptr++;
       }
-      else
-	*dptr++ = *ptr++;
-    }
     *dptr = 0;
 
     new_argv = xmalloc (2 * sizeof (char *));
     new_argv[0] = buffer;
     new_argv[1] = 0;
   }
-#else	/* Not Amiga  */
+#else /* Not Amiga  */
 #ifdef WINDOWS32
   /*
    * Not eating this whitespace caused things like
@@ -2802,71 +2853,71 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
 # endif
 
     /* In .ONESHELL mode we are allowed to throw the entire current
-	recipe string at a single shell and trust that the user
-	has configured the shell and shell flags, and formatted
-	the string, appropriately. */
+       recipe string at a single shell and trust that the user
+       has configured the shell and shell flags, and formatted
+       the string, appropriately. */
     if (one_shell)
       {
-	/* If the shell is Bourne compatible, we must remove and ignore
-	   interior special chars [@+-] because they're meaningless to
-	   the shell itself. If, however, we're in .ONESHELL mode and
-	   have changed SHELL to something non-standard, we should
-	   leave those alone because they could be part of the
-	   script. In this case we must also leave in place
-	   any leading [@+-] for the same reason.  */
+        /* If the shell is Bourne compatible, we must remove and ignore
+           interior special chars [@+-] because they're meaningless to
+           the shell itself. If, however, we're in .ONESHELL mode and
+           have changed SHELL to something non-standard, we should
+           leave those alone because they could be part of the
+           script. In this case we must also leave in place
+           any leading [@+-] for the same reason.  */
 
-	/* Remove and ignore interior prefix chars [@+-] because they're
-	     meaningless given a single shell. */
+        /* Remove and ignore interior prefix chars [@+-] because they're
+           meaningless given a single shell. */
 #if defined __MSDOS__ || defined (__EMX__)
-	if (unixy_shell)     /* the test is complicated and we already did it */
+        if (unixy_shell)     /* the test is complicated and we already did it */
 #else
-	if (is_bourne_compatible_shell(shell))
+          if (is_bourne_compatible_shell(shell))
 #endif
-          {
-            const char *f = line;
-            char *t = line;
+            {
+              const char *f = line;
+              char *t = line;
 
-            /* Copy the recipe, removing and ignoring interior prefix chars
-               [@+-]: they're meaningless in .ONESHELL mode.  */
-            while (f[0] != '\0')
-              {
-                int esc = 0;
+              /* Copy the recipe, removing and ignoring interior prefix chars
+                 [@+-]: they're meaningless in .ONESHELL mode.  */
+              while (f[0] != '\0')
+                {
+                  int esc = 0;
 
-                /* This is the start of a new recipe line.
-                   Skip whitespace and prefix characters.  */
-                while (isblank (*f) || *f == '-' || *f == '@' || *f == '+')
-                  ++f;
+                  /* This is the start of a new recipe line.
+                     Skip whitespace and prefix characters.  */
+                  while (isblank (*f) || *f == '-' || *f == '@' || *f == '+')
+                    ++f;
 
-                /* Copy until we get to the next logical recipe line.  */
-                while (*f != '\0')
-                  {
-                    *(t++) = *(f++);
-                    if (f[-1] == '\\')
-                      esc = !esc;
-                    else
-                      {
-                        /* On unescaped newline, we're done with this line.  */
-                        if (f[-1] == '\n' && ! esc)
-                          break;
+                  /* Copy until we get to the next logical recipe line.  */
+                  while (*f != '\0')
+                    {
+                      *(t++) = *(f++);
+                      if (f[-1] == '\\')
+                        esc = !esc;
+                      else
+                        {
+                          /* On unescaped newline, we're done with this line.  */
+                          if (f[-1] == '\n' && ! esc)
+                            break;
 
-                        /* Something else: reset the escape sequence.  */
-                        esc = 0;
-                      }
-                  }
-              }
-            *t = '\0';
-          }
+                          /* Something else: reset the escape sequence.  */
+                          esc = 0;
+                        }
+                    }
+                }
+              *t = '\0';
+            }
 
-	new_argv = xmalloc (4 * sizeof (char *));
-	new_argv[0] = xstrdup(shell);
-	new_argv[1] = xstrdup(shellflags);
-	new_argv[2] = line;
-	new_argv[3] = NULL;
-	return new_argv;
+        new_argv = xmalloc (4 * sizeof (char *));
+        new_argv[0] = xstrdup(shell);
+        new_argv[1] = xstrdup(shellflags);
+        new_argv[2] = line;
+        new_argv[3] = NULL;
+        return new_argv;
       }
 
     new_line = alloca (shell_len + 1 + sflags_len + 1
-                             + (line_len*2) + 1);
+                       + (line_len*2) + 1);
     ap = new_line;
     memcpy (ap, shell, shell_len);
     ap += shell_len;
@@ -2877,14 +2928,14 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
     command_ptr = ap;
     for (p = line; *p != '\0'; ++p)
       {
-	if (restp != NULL && *p == '\n')
-	  {
-	    *restp = p;
-	    break;
-	  }
-	else if (*p == '\\' && p[1] == '\n')
-	  {
-	    /* POSIX says we keep the backslash-newline.  If we don't have a
+        if (restp != NULL && *p == '\n')
+          {
+            *restp = p;
+            break;
+          }
+        else if (*p == '\\' && p[1] == '\n')
+          {
+            /* POSIX says we keep the backslash-newline.  If we don't have a
                POSIX shell on DOS/Windows/OS2, mimic the pre-POSIX behavior
                and remove the backslash/newline.  */
 #if defined (__MSDOS__) || defined (__EMX__) || defined (WINDOWS32)
@@ -2892,26 +2943,26 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
 #else
 # define PRESERVE_BSNL  1
 #endif
-	    if (PRESERVE_BSNL)
-	      {
-		*(ap++) = '\\';
-		/* Only non-batch execution needs another backslash,
-		   because it will be passed through a recursive
-		   invocation of this function.  */
-		if (!batch_mode_shell)
-		  *(ap++) = '\\';
-		*(ap++) = '\n';
-	      }
-	    ++p;
-	    continue;
-	  }
+            if (PRESERVE_BSNL)
+              {
+                *(ap++) = '\\';
+                /* Only non-batch execution needs another backslash,
+                   because it will be passed through a recursive
+                   invocation of this function.  */
+                if (!batch_mode_shell)
+                  *(ap++) = '\\';
+                *(ap++) = '\n';
+              }
+            ++p;
+            continue;
+          }
 
         /* DOS shells don't know about backslash-escaping.  */
-	if (unixy_shell && !batch_mode_shell &&
+        if (unixy_shell && !batch_mode_shell &&
             (*p == '\\' || *p == '\'' || *p == '"'
              || isspace ((unsigned char)*p)
              || strchr (sh_chars, *p) != 0))
-	  *ap++ = '\\';
+          *ap++ = '\\';
 #ifdef __MSDOS__
         else if (unixy_shell && strneq (p, "...", 3))
           {
@@ -2921,7 +2972,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
             p  += 2;
           }
 #endif
-	*ap++ = *p;
+        *ap++ = *p;
       }
     if (ap == new_line + shell_len + sflags_len + 2)
       /* Line was empty.  */
@@ -2934,7 +2985,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
        cases, run commands via a script file.  */
     if (just_print_flag && !(flags & COMMANDS_RECURSE)) {
       /* Need to allocate new_argv, although it's unused, because
-        start_job_command will want to free it and its 0'th element.  */
+         start_job_command will want to free it and its 0'th element.  */
       new_argv = xmalloc(2 * sizeof (char *));
       new_argv[0] = xstrdup ("");
       new_argv[1] = NULL;
@@ -2952,7 +3003,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
                     *batch_filename_ptr));
 
       /* Create a FILE object for the batch file, and write to it the
-	 commands to be executed.  Put the batch file in TEXT mode.  */
+         commands to be executed.  Put the batch file in TEXT mode.  */
       _setmode (temp_fd, _O_TEXT);
       batch = _fdopen (temp_fd, "wt");
       if (!unixy_shell)
@@ -2961,7 +3012,7 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
       fputc ('\n', batch);
       fclose (batch);
       DB (DB_JOBS, (_("Batch file contents:%s\n\t%s\n"),
-		    !unixy_shell ? "\n\t@echo off" : "", command_ptr));
+                    !unixy_shell ? "\n\t@echo off" : "", command_ptr));
 
       /* create argv */
       new_argv = xmalloc(3 * sizeof (char *));
@@ -2976,97 +3027,97 @@ construct_command_argv_internal (char *line, char **restp, char *shell,
     } else
 #endif /* WINDOWS32 */
 
-    if (unixy_shell)
-      new_argv = construct_command_argv_internal (new_line, 0, 0, 0, 0, flags, 0);
+      if (unixy_shell)
+        new_argv = construct_command_argv_internal (new_line, 0, 0, 0, 0, flags, 0);
 
 #ifdef __EMX__
-    else if (!unixy_shell)
-      {
-	/* new_line is local, must not be freed therefore
-           We use line here instead of new_line because we run the shell
-           manually.  */
-        size_t line_len = strlen (line);
-        char *p = new_line;
-        char *q = new_line;
-        memcpy (new_line, line, line_len + 1);
-        /* Replace all backslash-newline combination and also following tabs.
-           Important: stop at the first '\n' because that's what the loop above
-           did. The next line starting at restp[0] will be executed during the
-           next call of this function. */
-        while (*q != '\0' && *q != '\n')
-          {
-            if (q[0] == '\\' && q[1] == '\n')
-              q += 2; /* remove '\\' and '\n' */
-            else
-              *p++ = *q++;
-          }
-        *p = '\0';
+      else if (!unixy_shell)
+        {
+          /* new_line is local, must not be freed therefore
+             We use line here instead of new_line because we run the shell
+             manually.  */
+          size_t line_len = strlen (line);
+          char *p = new_line;
+          char *q = new_line;
+          memcpy (new_line, line, line_len + 1);
+          /* Replace all backslash-newline combination and also following tabs.
+             Important: stop at the first '\n' because that's what the loop above
+             did. The next line starting at restp[0] will be executed during the
+             next call of this function. */
+          while (*q != '\0' && *q != '\n')
+            {
+              if (q[0] == '\\' && q[1] == '\n')
+                q += 2; /* remove '\\' and '\n' */
+              else
+                *p++ = *q++;
+            }
+          *p = '\0';
 
 # ifndef NO_CMD_DEFAULT
-        if (strnicmp (new_line, "echo", 4) == 0
-            && (new_line[4] == ' ' || new_line[4] == '\t'))
-          {
-            /* the builtin echo command: handle it separately */
-            size_t echo_len = line_len - 5;
-            char *echo_line = new_line + 5;
+          if (strnicmp (new_line, "echo", 4) == 0
+              && (new_line[4] == ' ' || new_line[4] == '\t'))
+            {
+              /* the builtin echo command: handle it separately */
+              size_t echo_len = line_len - 5;
+              char *echo_line = new_line + 5;
 
-            /* special case: echo 'x="y"'
-               cmd works this way: a string is printed as is, i.e., no quotes
-               are removed. But autoconf uses a command like echo 'x="y"' to
-               determine whether make works. autoconf expects the output x="y"
-               so we will do exactly that.
-               Note: if we do not allow cmd to be the default shell
-               we do not need this kind of voodoo */
-            if (echo_line[0] == '\''
-                && echo_line[echo_len - 1] == '\''
-                && strncmp (echo_line + 1, "ac_maketemp=",
-                            strlen ("ac_maketemp=")) == 0)
-              {
-                /* remove the enclosing quotes */
-                memmove (echo_line, echo_line + 1, echo_len - 2);
-                echo_line[echo_len - 2] = '\0';
-              }
-          }
+              /* special case: echo 'x="y"'
+                 cmd works this way: a string is printed as is, i.e., no quotes
+                 are removed. But autoconf uses a command like echo 'x="y"' to
+                 determine whether make works. autoconf expects the output x="y"
+                 so we will do exactly that.
+                 Note: if we do not allow cmd to be the default shell
+                 we do not need this kind of voodoo */
+              if (echo_line[0] == '\''
+                  && echo_line[echo_len - 1] == '\''
+                  && strncmp (echo_line + 1, "ac_maketemp=",
+                              strlen ("ac_maketemp=")) == 0)
+                {
+                  /* remove the enclosing quotes */
+                  memmove (echo_line, echo_line + 1, echo_len - 2);
+                  echo_line[echo_len - 2] = '\0';
+                }
+            }
 # endif
 
-        {
-          /* Let the shell decide what to do. Put the command line into the
-             2nd command line argument and hope for the best ;-)  */
-          size_t sh_len = strlen (shell);
+          {
+            /* Let the shell decide what to do. Put the command line into the
+               2nd command line argument and hope for the best ;-)  */
+            size_t sh_len = strlen (shell);
 
-          /* exactly 3 arguments + NULL */
-          new_argv = xmalloc (4 * sizeof (char *));
-          /* Exactly strlen(shell) + strlen("/c") + strlen(line) + 3 times
-             the trailing '\0' */
-          new_argv[0] = xmalloc (sh_len + line_len + 5);
-          memcpy (new_argv[0], shell, sh_len + 1);
-          new_argv[1] = new_argv[0] + sh_len + 1;
-          memcpy (new_argv[1], "/c", 3);
-          new_argv[2] = new_argv[1] + 3;
-          memcpy (new_argv[2], new_line, line_len + 1);
-          new_argv[3] = NULL;
+            /* exactly 3 arguments + NULL */
+            new_argv = xmalloc (4 * sizeof (char *));
+            /* Exactly strlen(shell) + strlen("/c") + strlen(line) + 3 times
+               the trailing '\0' */
+            new_argv[0] = xmalloc (sh_len + line_len + 5);
+            memcpy (new_argv[0], shell, sh_len + 1);
+            new_argv[1] = new_argv[0] + sh_len + 1;
+            memcpy (new_argv[1], "/c", 3);
+            new_argv[2] = new_argv[1] + 3;
+            memcpy (new_argv[2], new_line, line_len + 1);
+            new_argv[3] = NULL;
+          }
         }
-      }
 #elif defined(__MSDOS__)
-    else
-      {
-        /* With MSDOS shells, we must construct the command line here
-           instead of recursively calling ourselves, because we
-           cannot backslash-escape the special characters (see above).  */
-        new_argv = xmalloc (sizeof (char *));
-        line_len = strlen (new_line) - shell_len - sflags_len - 2;
-        new_argv[0] = xmalloc (line_len + 1);
-        strncpy (new_argv[0],
-                 new_line + shell_len + sflags_len + 2, line_len);
-        new_argv[0][line_len] = '\0';
-      }
+      else
+        {
+          /* With MSDOS shells, we must construct the command line here
+             instead of recursively calling ourselves, because we
+             cannot backslash-escape the special characters (see above).  */
+          new_argv = xmalloc (sizeof (char *));
+          line_len = strlen (new_line) - shell_len - sflags_len - 2;
+          new_argv[0] = xmalloc (line_len + 1);
+          strncpy (new_argv[0],
+                   new_line + shell_len + sflags_len + 2, line_len);
+          new_argv[0][line_len] = '\0';
+        }
 #else
     else
       fatal (NILF, _("%s (line %d) Bad shell context (!unixy && !batch_mode_shell)\n"),
-            __FILE__, __LINE__);
+             __FILE__, __LINE__);
 #endif
   }
-#endif	/* ! AMIGA */
+#endif  /* ! AMIGA */
 
   return new_argv;
 }
@@ -3101,13 +3152,13 @@ construct_command_argv (char *line, char **restp, struct file *file,
   for (;;)
     {
       while ((*cptr != 0)
-	     && (isspace ((unsigned char)*cptr)))
-	cptr++;
+             && (isspace ((unsigned char)*cptr)))
+        cptr++;
       if (*cptr == 0)
-	break;
+        break;
       while ((*cptr != 0)
-	     && (!isspace((unsigned char)*cptr)))
-	cptr++;
+             && (!isspace((unsigned char)*cptr)))
+        cptr++;
       argc++;
     }
 
@@ -3120,17 +3171,17 @@ construct_command_argv (char *line, char **restp, struct file *file,
   for (;;)
     {
       while ((*cptr != 0)
-	     && (isspace ((unsigned char)*cptr)))
-	cptr++;
+             && (isspace ((unsigned char)*cptr)))
+        cptr++;
       if (*cptr == 0)
-	break;
+        break;
       DB (DB_JOBS, ("argv[%d] = [%s]\n", argc, cptr));
       argv[argc++] = cptr;
       while ((*cptr != 0)
-	     && (!isspace((unsigned char)*cptr)))
-	cptr++;
+             && (!isspace((unsigned char)*cptr)))
+        cptr++;
       if (*cptr != 0)
-	*cptr++ = 0;
+        *cptr++ = 0;
     }
 #else
   {
@@ -3155,12 +3206,12 @@ construct_command_argv (char *line, char **restp, struct file *file,
       static const char *last_shell = "";
       static int init = 0;
       if (init == 0)
-	{
-	  unixroot = getenv ("UNIXROOT");
-	  /* unixroot must be NULL or not empty */
-	  if (unixroot && unixroot[0] == '\0') unixroot = NULL;
-	  init = 1;
-	}
+        {
+          unixroot = getenv ("UNIXROOT");
+          /* unixroot must be NULL or not empty */
+          if (unixroot && unixroot[0] == '\0') unixroot = NULL;
+          init = 1;
+        }
 
       /* if we have an unixroot drive and if shell is not default_shell
          (which means it's either cmd.exe or the test has already been
@@ -3168,29 +3219,29 @@ construct_command_argv (char *line, char **restp, struct file *file,
          try whether it exists e.g.: if "/bin/sh" does not exist use
          "$UNIXROOT/bin/sh" instead.  */
       if (unixroot && shell && strcmp (shell, last_shell) != 0
-	  && (shell[0] == '/' || shell[0] == '\\'))
-	{
-	  /* trying a new shell, check whether it exists */
-	  size_t size = strlen (shell);
-	  char *buf = xmalloc (size + 7);
-	  memcpy (buf, shell, size);
-	  memcpy (buf + size, ".exe", 5); /* including the trailing '\0' */
+          && (shell[0] == '/' || shell[0] == '\\'))
+        {
+          /* trying a new shell, check whether it exists */
+          size_t size = strlen (shell);
+          char *buf = xmalloc (size + 7);
+          memcpy (buf, shell, size);
+          memcpy (buf + size, ".exe", 5); /* including the trailing '\0' */
           if (access (shell, F_OK) != 0 && access (buf, F_OK) != 0)
-	    {
-	      /* try the same for the unixroot drive */
-	      memmove (buf + 2, buf, size + 5);
-	      buf[0] = unixroot[0];
-	      buf[1] = unixroot[1];
-	      if (access (buf, F_OK) == 0)
-		/* we have found a shell! */
-		/* free(shell); */
-		shell = buf;
-	      else
-		free (buf);
-	    }
-	  else
+            {
+              /* try the same for the unixroot drive */
+              memmove (buf + 2, buf, size + 5);
+              buf[0] = unixroot[0];
+              buf[1] = unixroot[1];
+              if (access (buf, F_OK) == 0)
+                /* we have found a shell! */
+                /* free(shell); */
+                shell = buf;
+              else
+                free (buf);
+            }
+          else
             free (buf);
-	}
+        }
     }
 #endif /* __EMX__ */
 

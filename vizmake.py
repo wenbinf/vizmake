@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+#                                                                                                           
+# vizmake is a simple textual monitoring tool                                                               
+#                                                                                                           
+# Copyright (C) Wenbin Fang 2012 <wenbin@cs.wisc.edu>                                                      
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __appname__ = 'vizmake'
 __version__ = "2.0.0"
@@ -207,7 +224,7 @@ class Process:
 
         for filenm in self.filenm:
             self._parse(filenm)
-
+            
         # Fix up command to lines
         self._fixup_commands()
 
@@ -403,12 +420,17 @@ class VizMake:
         
         for (pid, proc) in self.proc_map.iteritems():
             proc.update()
-            if proc.type == 'MAKE':
+            if proc.type == 'CMD':
+                try:
+                    pproc = self.proc_map[proc.ppid]
+                    pproc.children.append(proc)
+                except:
+                    print "cannot find", proc.ppid
+            else:
                 self.make_procs.append(proc)
-                for (_pid, _proc) in self.proc_map.iteritems():
-                    if _proc.ppid == pid:
-                        proc.children.append(_proc)
-                proc.children = sorted(proc.children)
+
+        for (pid, proc) in self.proc_map.iteritems():
+            proc.children = sorted(proc.children)
 
         self.make_procs = sorted(self.make_procs)
 
@@ -621,6 +643,7 @@ class VizMake:
             httpd.serve_forever()
         except KeyboardInterrupt:
             httpd.shutdown()
+            httpd.socket.close()
             print "Exit visualization"
 
 #
@@ -629,7 +652,6 @@ class VizMake:
 def main():
     viz = VizMake()
     viz.run()
-#    print viz.makefile
 
 if __name__ == '__main__':
     main()

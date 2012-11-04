@@ -1,20 +1,22 @@
 /* Variable expansion functions for GNU Make.
-Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-2010 Free Software Foundation, Inc.
-This file is part of GNU Make.
+   Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
+   This file is part of GNU Make.
 
-GNU Make is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
+   GNU Make is free software; you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation; either version 3 of the License, or (at your option) any later
+   version.
 
-GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with
+   this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+#include "debug.h"
 
 #include "make.h"
 
@@ -63,8 +65,8 @@ variable_buffer_output (char *ptr, const char *string, unsigned int length)
     {
       unsigned int offset = ptr - variable_buffer;
       variable_buffer_length = (newlen + 100 > 2 * variable_buffer_length
-				? newlen + 100
-				: 2 * variable_buffer_length);
+                                ? newlen + 100
+                                : 2 * variable_buffer_length);
       variable_buffer = xrealloc (variable_buffer, variable_buffer_length);
       ptr = variable_buffer + offset;
     }
@@ -150,6 +152,9 @@ recursively_expand_for_file (struct variable *v, struct file *file)
 
   expanding_var = saved_varp;
 
+  //variable name | value | filename | line number
+  //variable name | value | origin   | 0          
+
   return value;
 }
 
@@ -158,9 +163,49 @@ recursively_expand_for_file (struct variable *v, struct file *file)
 #ifdef __GNUC__
 __inline
 #endif
+
+void vprint_var(struct variable* v, char* value) {
+  if (!v) return;
+
+  switch (v->origin) {
+  case o_default:
+    vprint("VAR REF END---DEFAULT---%s---%s---%s", v->name, v->value, value);
+    break;
+  case o_env:
+    vprint("VAR REF END---ENV---%s---%s---%s", v->name, v->value, value);
+    break;
+  case o_file:
+    if (!v->fileinfo.filenm) {
+      vprint("VAR REF END---ENV---%s---%s---%s", v->name, v->value, value);
+      break;
+    }
+    vprint("VAR REF END---FILE---%s---%s---%s---%lu---%s",
+           v->name, v->value, v->fileinfo.filenm, v->fileinfo.lineno, value);
+    break;
+  case o_env_override:
+    assert(0 && "env override");
+    break;
+  case o_command:
+    vprint("VAR REF END---CMD---%s---%s---%s", v->name, v->value, value);
+    break;
+  case o_override:
+    assert(0 && "override");
+    break;
+  case o_automatic:
+    vprint("VAR REF END---AUTO---%s---%s---%s", v->name, v->value, value);
+    break;
+  case o_invalid:
+    assert(0 && "invalid");
+    break;
+  default:
+    break;
+  }
+}
+
 static char *
 reference_variable (char *o, const char *name, unsigned int length)
 {
+  // fprintf(stderr, "reference variable for name=%s, length=%d, o=%s\n", name, length, o);
   struct variable *v;
   char *value;
 
@@ -170,12 +215,27 @@ reference_variable (char *o, const char *name, unsigned int length)
     warn_undefined (name, length);
 
   /* If there's no variable by that name or it has no value, stop now.  */
-  if (v == 0 || (*v->value == '\0' && !v->append))
+  if (v == 0 || (*v->value == '\0' && !v->append)) {
+    if (!v) {
+      char buf[1024];
+      strncpy(buf, name, length);
+      buf[length] = '\0';
+      vprint("VAR REF END---UNDEFINED---%s", buf);
+    }
+    else
+      vprint_var(v, "");
+
     return o;
+  }
 
   value = (v->recursive ? recursively_expand (v) : v->value);
 
+  // Wenbin
+  vprint_var(v, value);
+
   o = variable_buffer_output (o, value, strlen (value));
+
+  // fprintf(stderr, "wenbin: %s: %s=%s => %s\n", name, v->name, v->value, o);
 
   if (v->recursive)
     free (value);
@@ -191,7 +251,9 @@ reference_variable (char *o, const char *name, unsigned int length)
    LINE is NULL, start at the beginning of the buffer.
    Return a pointer to LINE, or to the beginning of the buffer if LINE is
    NULL.
- */
+*/
+int level = 0;
+
 char *
 variable_expand_string (char *line, const char *string, long length)
 {
@@ -227,118 +289,118 @@ variable_expand_string (char *line, const char *string, long length)
     {
       /* Copy all following uninteresting chars all at once to the
          variable output buffer, and skip them.  Uninteresting chars end
-	 at the next $ or the end of the input.  */
+         at the next $ or the end of the input.  */
 
       p1 = strchr (p, '$');
 
       o = variable_buffer_output (o, p, p1 != 0 ? (unsigned int)(p1 - p) : strlen (p) + 1);
 
       if (p1 == 0)
-	break;
+        break;
       p = p1 + 1;
 
       /* Dispatch on the char that follows the $.  */
 
       switch (*p)
-	{
-	case '$':
-	  /* $$ seen means output one $ to the variable output buffer.  */
-	  o = variable_buffer_output (o, p, 1);
-	  break;
+        {
+        case '$':
+          /* $$ seen means output one $ to the variable output buffer.  */
+          o = variable_buffer_output (o, p, 1);
+          break;
 
-	case '(':
-	case '{':
-	  /* $(...) or ${...} is the general case of substitution.  */
-	  {
-	    char openparen = *p;
-	    char closeparen = (openparen == '(') ? ')' : '}';
+        case '(':
+        case '{':
+          /* $(...) or ${...} is the general case of substitution.  */
+          {
+            char openparen = *p;
+            char closeparen = (openparen == '(') ? ')' : '}';
             const char *begp;
-	    const char *beg = p + 1;
-	    char *op;
+            const char *beg = p + 1;
+            char *op;
             char *abeg = NULL;
-	    const char *end, *colon;
+            const char *end, *colon;
 
-	    op = o;
-	    begp = p;
-	    if (handle_function (&op, &begp))
-	      {
-		o = op;
-		p = begp;
-		break;
-	      }
+            op = o;
+            begp = p;
+            if (handle_function (&op, &begp))
+              {
+                o = op;
+                p = begp;
+                break;
+              }
 
-	    /* Is there a variable reference inside the parens or braces?
-	       If so, expand it before expanding the entire reference.  */
+            /* Is there a variable reference inside the parens or braces?
+               If so, expand it before expanding the entire reference.  */
 
-	    end = strchr (beg, closeparen);
-	    if (end == 0)
+            end = strchr (beg, closeparen);
+            if (end == 0)
               /* Unterminated variable reference.  */
               fatal (*expanding_var, _("unterminated variable reference"));
-	    p1 = lindex (beg, end, '$');
-	    if (p1 != 0)
-	      {
-		/* BEG now points past the opening paren or brace.
-		   Count parens or braces until it is matched.  */
-		int count = 0;
-		for (p = beg; *p != '\0'; ++p)
-		  {
-		    if (*p == openparen)
-		      ++count;
-		    else if (*p == closeparen && --count < 0)
-		      break;
-		  }
-		/* If COUNT is >= 0, there were unmatched opening parens
-		   or braces, so we go to the simple case of a variable name
-		   such as `$($(a)'.  */
-		if (count < 0)
-		  {
-		    abeg = expand_argument (beg, p); /* Expand the name.  */
-		    beg = abeg;
-		    end = strchr (beg, '\0');
-		  }
-	      }
-	    else
-	      /* Advance P to the end of this reference.  After we are
+            p1 = lindex (beg, end, '$');
+            if (p1 != 0)
+              {
+                /* BEG now points past the opening paren or brace.
+                   Count parens or braces until it is matched.  */
+                int count = 0;
+                for (p = beg; *p != '\0'; ++p)
+                  {
+                    if (*p == openparen)
+                      ++count;
+                    else if (*p == closeparen && --count < 0)
+                      break;
+                  }
+                /* If COUNT is >= 0, there were unmatched opening parens
+                   or braces, so we go to the simple case of a variable name
+                   such as `$($(a)'.  */
+                if (count < 0)
+                  {
+                    abeg = expand_argument (beg, p); /* Expand the name.  */
+                    beg = abeg;
+                    end = strchr (beg, '\0');
+                  }
+              }
+            else
+              /* Advance P to the end of this reference.  After we are
                  finished expanding this one, P will be incremented to
                  continue the scan.  */
-	      p = end;
+              p = end;
 
-	    /* This is not a reference to a built-in function and
-	       any variable references inside are now expanded.
-	       Is the resultant text a substitution reference?  */
+            /* This is not a reference to a built-in function and
+               any variable references inside are now expanded.
+               Is the resultant text a substitution reference?  */
 
-	    colon = lindex (beg, end, ':');
-	    if (colon)
-	      {
-		/* This looks like a substitution reference: $(FOO:A=B).  */
-		const char *subst_beg, *subst_end, *replace_beg, *replace_end;
+            colon = lindex (beg, end, ':');
+            if (colon)
+              {
+                /* This looks like a substitution reference: $(FOO:A=B).  */
+                const char *subst_beg, *subst_end, *replace_beg, *replace_end;
 
-		subst_beg = colon + 1;
-		subst_end = lindex (subst_beg, end, '=');
-		if (subst_end == 0)
-		  /* There is no = in sight.  Punt on the substitution
-		     reference and treat this as a variable name containing
-		     a colon, in the code below.  */
-		  colon = 0;
-		else
-		  {
-		    replace_beg = subst_end + 1;
-		    replace_end = end;
+                subst_beg = colon + 1;
+                subst_end = lindex (subst_beg, end, '=');
+                if (subst_end == 0)
+                  /* There is no = in sight.  Punt on the substitution
+                     reference and treat this as a variable name containing
+                     a colon, in the code below.  */
+                  colon = 0;
+                else
+                  {
+                    replace_beg = subst_end + 1;
+                    replace_end = end;
 
-		    /* Extract the variable name before the colon
-		       and look up that variable.  */
-		    v = lookup_variable (beg, colon - beg);
-		    if (v == 0)
-		      warn_undefined (beg, colon - beg);
+                    /* Extract the variable name before the colon
+                       and look up that variable.  */
+                    v = lookup_variable (beg, colon - beg);
+                    if (v == 0)
+                      warn_undefined (beg, colon - beg);
 
                     /* If the variable is not empty, perform the
                        substitution.  */
-		    if (v != 0 && *v->value != '\0')
-		      {
-			char *pattern, *replace, *ppercent, *rpercent;
-			char *value = (v->recursive
+                    if (v != 0 && *v->value != '\0')
+                      {
+                        char *pattern, *replace, *ppercent, *rpercent;
+                        char *value = (v->recursive
                                        ? recursively_expand (v)
-				       : v->value);
+                                       : v->value);
 
                         /* Copy the pattern and the replacement.  Add in an
                            extra % at the beginning to use in case there
@@ -351,20 +413,20 @@ variable_expand_string (char *line, const char *string, long length)
                         replace = alloca (replace_end - replace_beg + 2);
                         *(replace++) = '%';
                         memcpy (replace, replace_beg,
-                               replace_end - replace_beg);
+                                replace_end - replace_beg);
                         replace[replace_end - replace_beg] = '\0';
 
                         /* Look for %.  Set the percent pointers properly
                            based on whether we find one or not.  */
-			ppercent = find_percent (pattern);
-			if (ppercent)
+                        ppercent = find_percent (pattern);
+                        if (ppercent)
                           {
                             ++ppercent;
                             rpercent = find_percent (replace);
                             if (rpercent)
                               ++rpercent;
                           }
-			else
+                        else
                           {
                             ppercent = pattern;
                             rpercent = replace;
@@ -375,38 +437,45 @@ variable_expand_string (char *line, const char *string, long length)
                         o = patsubst_expand_pat (o, value, pattern, replace,
                                                  ppercent, rpercent);
 
-			if (v->recursive)
-			  free (value);
-		      }
-		  }
-	      }
+                        if (v->recursive)
+                          free (value);
+                      }
+                  }
+              }
 
-	    if (colon == 0)
-	      /* This is an ordinary variable reference.
-		 Look up the value of the variable.  */
-		o = reference_variable (o, beg, end - beg);
+            if (colon == 0) {
+              /* This is an ordinary variable reference.
+                 Look up the value of the variable.  */
+              ++level;
+              char buf[1024];
+              strncpy(buf, beg, end - beg);
+              buf[end - beg] = '\0';
+              vprint("VAR REF BEGIN---%s---%d", buf, level);
+              o = reference_variable (o, beg, end - beg);
+              --level;
+            }
 
-	  if (abeg)
-	    free (abeg);
-	  }
-	  break;
+            if (abeg)
+              free (abeg);
+          }
+          break;
 
-	case '\0':
-	  break;
+        case '\0':
+          break;
 
-	default:
-	  if (isblank ((unsigned char)p[-1]))
-	    break;
+        default:
+          if (isblank ((unsigned char)p[-1]))
+            break;
 
-	  /* A $ followed by a random char is a variable reference:
-	     $a is equivalent to $(a).  */
+          /* A $ followed by a random char is a variable reference:
+             $a is equivalent to $(a).  */
           o = reference_variable (o, p, 1);
 
-	  break;
-	}
+          break;
+        }
 
       if (*p == '\0')
-	break;
+        break;
 
       ++p;
     }
@@ -426,7 +495,15 @@ variable_expand_string (char *line, const char *string, long length)
 char *
 variable_expand (const char *line)
 {
+  // fprintf(stderr, "variable expand\n");
+  // origin
   return variable_expand_string(NULL, line, (long)-1);
+
+  /*
+    char* value = variable_expand_string(NULL, line, (long)-1);
+    fprintf(stderr, "value %s\n", value);
+    return value;
+  */
 }
 
 /* Expand an argument for an expansion function.
@@ -473,15 +550,19 @@ variable_expand_for_file (const char *line, struct file *file)
   struct variable_set_list *savev;
   const struct floc *savef;
 
-  if (file == 0)
-    return variable_expand (line);
+  if (file == 0) {
 
+    return variable_expand (line);
+  }
   savev = current_variable_set_list;
   current_variable_set_list = file->variables;
 
   savef = reading_file;
-  if (file->cmds && file->cmds->fileinfo.filenm)
+  if (file->cmds && file->cmds->fileinfo.filenm) {
     reading_file = &file->cmds->fileinfo;
+
+  }
+
   else
     reading_file = 0;
 
@@ -490,6 +571,7 @@ variable_expand_for_file (const char *line, struct file *file)
   current_variable_set_list = savev;
   reading_file = savef;
 
+  // fprintf(stderr, "%s\n", result);
   return result;
 }
 

@@ -1,20 +1,20 @@
 /* Builtin function expansion for GNU Make.
-Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-2010 Free Software Foundation, Inc.
-This file is part of GNU Make.
+   Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
+   This file is part of GNU Make.
 
-GNU Make is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
+   GNU Make is free software; you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation; either version 3 of the License, or (at your option) any later
+   version.
 
-GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with
+   this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "make.h"
 #include "filedef.h"
@@ -30,14 +30,14 @@ this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 struct function_table_entry
-  {
-    const char *name;
-    unsigned char len;
-    unsigned char minimum_args;
-    unsigned char maximum_args;
-    char expand_args;
-    char *(*func_ptr) (char *output, char **argv, const char *fname);
-  };
+{
+  const char *name;
+  unsigned char len;
+  unsigned char minimum_args;
+  unsigned char maximum_args;
+  char expand_args;
+  char *(*func_ptr) (char *output, char **argv, const char *fname);
+};
 
 static unsigned long
 function_table_entry_hash_1 (const void *keyv)
@@ -85,42 +85,42 @@ subst_expand (char *o, const char *text, const char *subst, const char *replace,
       /* The first occurrence of "" in any string is its end.  */
       o = variable_buffer_output (o, t, strlen (t));
       if (rlen > 0)
-	o = variable_buffer_output (o, replace, rlen);
+        o = variable_buffer_output (o, replace, rlen);
       return o;
     }
 
   do
     {
       if (by_word && slen == 0)
-	/* When matching by words, the empty string should match
-	   the end of each word, rather than the end of the whole text.  */
-	p = end_of_token (next_token (t));
+        /* When matching by words, the empty string should match
+           the end of each word, rather than the end of the whole text.  */
+        p = end_of_token (next_token (t));
       else
-	{
-	  p = strstr (t, subst);
-	  if (p == 0)
-	    {
-	      /* No more matches.  Output everything left on the end.  */
-	      o = variable_buffer_output (o, t, strlen (t));
-	      return o;
-	    }
-	}
+        {
+          p = strstr (t, subst);
+          if (p == 0)
+            {
+              /* No more matches.  Output everything left on the end.  */
+              o = variable_buffer_output (o, t, strlen (t));
+              return o;
+            }
+        }
 
       /* Output everything before this occurrence of the string to replace.  */
       if (p > t)
-	o = variable_buffer_output (o, t, p - t);
+        o = variable_buffer_output (o, t, p - t);
 
       /* If we're substituting only by fully matched words,
-	 or only at the ends of words, check that this case qualifies.  */
+         or only at the ends of words, check that this case qualifies.  */
       if (by_word
           && ((p > text && !isblank ((unsigned char)p[-1]))
               || (p[slen] != '\0' && !isblank ((unsigned char)p[slen]))))
-	/* Struck out.  Output the rest of the string that is
-	   no longer to be replaced.  */
-	o = variable_buffer_output (o, subst, slen);
+        /* Struck out.  Output the rest of the string that is
+           no longer to be replaced.  */
+        o = variable_buffer_output (o, subst, slen);
       else if (rlen > 0)
-	/* Output the replacement string.  */
-	o = variable_buffer_output (o, replace, rlen);
+        /* Output the replacement string.  */
+        o = variable_buffer_output (o, replace, rlen);
 
       /* Advance T past the string to be replaced.  */
       t = p + slen;
@@ -167,7 +167,7 @@ patsubst_expand_pat (char *o, const char *text,
   if (!pattern_percent)
     /* With no % in the pattern, this is just a simple substitution.  */
     return subst_expand (o, text, pattern, replace,
-			 strlen (pattern), strlen (replace), 1);
+                         strlen (pattern), strlen (replace), 1);
 
   /* Record the length of PATTERN before and after the %
      so we don't have to compute it more than once.  */
@@ -180,53 +180,53 @@ patsubst_expand_pat (char *o, const char *text,
 
       /* Is it big enough to match?  */
       if (len < pattern_prepercent_len + pattern_postpercent_len)
-	fail = 1;
+        fail = 1;
 
       /* Does the prefix match? */
       if (!fail && pattern_prepercent_len > 0
-	  && (*t != *pattern
-	      || t[pattern_prepercent_len - 1] != pattern_percent[-2]
-	      || !strneq (t + 1, pattern + 1, pattern_prepercent_len - 1)))
-	fail = 1;
+          && (*t != *pattern
+              || t[pattern_prepercent_len - 1] != pattern_percent[-2]
+              || !strneq (t + 1, pattern + 1, pattern_prepercent_len - 1)))
+        fail = 1;
 
       /* Does the suffix match? */
       if (!fail && pattern_postpercent_len > 0
-	  && (t[len - 1] != pattern_percent[pattern_postpercent_len - 1]
-	      || t[len - pattern_postpercent_len] != *pattern_percent
-	      || !strneq (&t[len - pattern_postpercent_len],
-			  pattern_percent, pattern_postpercent_len - 1)))
-	fail = 1;
+          && (t[len - 1] != pattern_percent[pattern_postpercent_len - 1]
+              || t[len - pattern_postpercent_len] != *pattern_percent
+              || !strneq (&t[len - pattern_postpercent_len],
+                          pattern_percent, pattern_postpercent_len - 1)))
+        fail = 1;
 
       if (fail)
-	/* It didn't match.  Output the string.  */
-	o = variable_buffer_output (o, t, len);
+        /* It didn't match.  Output the string.  */
+        o = variable_buffer_output (o, t, len);
       else
-	{
-	  /* It matched.  Output the replacement.  */
+        {
+          /* It matched.  Output the replacement.  */
 
-	  /* Output the part of the replacement before the %.  */
-	  o = variable_buffer_output (o, replace, replace_prepercent_len);
+          /* Output the part of the replacement before the %.  */
+          o = variable_buffer_output (o, replace, replace_prepercent_len);
 
-	  if (replace_percent != 0)
-	    {
-	      /* Output the part of the matched string that
-		 matched the % in the pattern.  */
-	      o = variable_buffer_output (o, t + pattern_prepercent_len,
-					  len - (pattern_prepercent_len
-						 + pattern_postpercent_len));
-	      /* Output the part of the replacement after the %.  */
-	      o = variable_buffer_output (o, replace_percent,
-					  replace_postpercent_len);
-	    }
-	}
+          if (replace_percent != 0)
+            {
+              /* Output the part of the matched string that
+                 matched the % in the pattern.  */
+              o = variable_buffer_output (o, t + pattern_prepercent_len,
+                                          len - (pattern_prepercent_len
+                                                 + pattern_postpercent_len));
+              /* Output the part of the replacement after the %.  */
+              o = variable_buffer_output (o, replace_percent,
+                                          replace_postpercent_len);
+            }
+        }
 
       /* Output a space, but not if the replacement is "".  */
       if (fail || replace_prepercent_len > 0
-	  || (replace_percent != 0 && len + replace_postpercent_len > 0))
-	{
-	  o = variable_buffer_output (o, " ", 1);
-	  doneany = 1;
-	}
+          || (replace_percent != 0 && len + replace_postpercent_len > 0))
+        {
+          o = variable_buffer_output (o, " ", 1);
+          doneany = 1;
+        }
     }
   if (doneany)
     /* Kill the last space.  */
@@ -297,7 +297,7 @@ pattern_matches (const char *pattern, const char *percent, const char *str)
       memcpy (new_chars, pattern, len);
       percent = find_percent (new_chars);
       if (percent == 0)
-	return streq (new_chars, str);
+        return streq (new_chars, str);
       pattern = new_chars;
     }
 
@@ -331,9 +331,9 @@ find_next_argument (char startparen, char endparen,
 
     else if (*ptr == endparen)
       {
-	--count;
-	if (count < 0)
-	  return NULL;
+        --count;
+        if (count < 0)
+          return NULL;
       }
 
     else if (*ptr == ',' && !count)
@@ -399,7 +399,7 @@ string_glob (char *line)
 
 /*
   Builtin functions
- */
+*/
 
 static char *
 func_patsubst (char *o, char **argv, const char *funcname UNUSED)
@@ -428,17 +428,17 @@ func_join (char *o, char **argv, const char *funcname UNUSED)
 
       tp = find_next_token (&list1_iterator, &len1);
       if (tp != 0)
-	o = variable_buffer_output (o, tp, len1);
+        o = variable_buffer_output (o, tp, len1);
 
       pp = find_next_token (&list2_iterator, &len2);
       if (pp != 0)
-	o = variable_buffer_output (o, pp, len2);
+        o = variable_buffer_output (o, pp, len2);
 
       if (tp != 0 || pp != 0)
-	{
-	  o = variable_buffer_output (o, " ", 1);
-	  doneany = 1;
-	}
+        {
+          o = variable_buffer_output (o, " ", 1);
+          doneany = 1;
+        }
     }
   while (tp != 0 || pp != 0);
   if (doneany)
@@ -461,29 +461,29 @@ func_origin (char *o, char **argv, const char *funcname UNUSED)
       {
       default:
       case o_invalid:
-	abort ();
-	break;
+        abort ();
+        break;
       case o_default:
-	o = variable_buffer_output (o, "default", 7);
-	break;
+        o = variable_buffer_output (o, "default", 7);
+        break;
       case o_env:
-	o = variable_buffer_output (o, "environment", 11);
-	break;
+        o = variable_buffer_output (o, "environment", 11);
+        break;
       case o_file:
-	o = variable_buffer_output (o, "file", 4);
-	break;
+        o = variable_buffer_output (o, "file", 4);
+        break;
       case o_env_override:
-	o = variable_buffer_output (o, "environment override", 20);
-	break;
+        o = variable_buffer_output (o, "environment override", 20);
+        break;
       case o_command:
-	o = variable_buffer_output (o, "command line", 12);
-	break;
+        o = variable_buffer_output (o, "command line", 12);
+        break;
       case o_override:
-	o = variable_buffer_output (o, "override", 8);
-	break;
+        o = variable_buffer_output (o, "override", 8);
+        break;
       case o_automatic:
-	o = variable_buffer_output (o, "automatic", 9);
-	break;
+        o = variable_buffer_output (o, "automatic", 9);
+        break;
       }
 
   return o;
@@ -533,36 +533,36 @@ func_notdir_suffix (char *o, char **argv, const char *funcname)
 
 
       while (p >= p2 && (!is_suffix || *p != '.'))
-	{
-	  if (IS_PATHSEP (*p))
-	    break;
-	  --p;
-	}
+        {
+          if (IS_PATHSEP (*p))
+            break;
+          --p;
+        }
 
       if (p >= p2)
-	{
-	  if (is_notdir)
-	    ++p;
-	  else if (*p != '.')
-	    continue;
-	  o = variable_buffer_output (o, p, len - (p - p2));
-	}
+        {
+          if (is_notdir)
+            ++p;
+          else if (*p != '.')
+            continue;
+          o = variable_buffer_output (o, p, len - (p - p2));
+        }
 #ifdef HAVE_DOS_PATHS
       /* Handle the case of "d:foo/bar".  */
       else if (streq (funcname, "notdir") && p2[0] && p2[1] == ':')
-	{
-	  p = p2 + 2;
-	  o = variable_buffer_output (o, p, len - (p - p2));
-	}
+        {
+          p = p2 + 2;
+          o = variable_buffer_output (o, p, len - (p - p2));
+        }
 #endif
       else if (is_notdir)
-	o = variable_buffer_output (o, p2, len);
+        o = variable_buffer_output (o, p2, len);
 
       if (is_notdir || p >= p2)
-	{
-	  o = variable_buffer_output (o, " ", 1);
-	  doneany = 1;
-	}
+        {
+          o = variable_buffer_output (o, " ", 1);
+          doneany = 1;
+        }
     }
 
   if (doneany)
@@ -644,10 +644,10 @@ func_addsuffix_addprefix (char *o, char **argv, const char *funcname)
   while ((p = find_next_token (&list_iterator, &len)) != 0)
     {
       if (is_addprefix)
-	o = variable_buffer_output (o, argv[0], fixlen);
+        o = variable_buffer_output (o, argv[0], fixlen);
       o = variable_buffer_output (o, p, len);
       if (is_addsuffix)
-	o = variable_buffer_output (o, argv[0], fixlen);
+        o = variable_buffer_output (o, argv[0], fixlen);
       o = variable_buffer_output (o, " ", 1);
       doneany = 1;
     }
@@ -663,7 +663,7 @@ static char *
 func_subst (char *o, char **argv, const char *funcname UNUSED)
 {
   o = subst_expand (o, argv[2], argv[0], argv[1], strlen (argv[0]),
-		    strlen (argv[1]), 0);
+                    strlen (argv[1]), 0);
 
   return o;
 }
@@ -780,9 +780,9 @@ func_wordlist (char *o, char **argv, const char *funcname UNUSED)
 
   /* Check the arguments.  */
   check_numeric (argv[0],
-		 _("non-numeric first argument to `wordlist' function"));
+                 _("non-numeric first argument to `wordlist' function"));
   check_numeric (argv[1],
-		 _("non-numeric second argument to `wordlist' function"));
+                 _("non-numeric second argument to `wordlist' function"));
 
   start = atoi (argv[0]);
   if (start < 1)
@@ -896,7 +896,7 @@ a_word_hash_cmp (const void *x, const void *y)
   if (result)
     return result;
   return_STRING_COMPARE (((struct a_word const *) x)->str,
-			 ((struct a_word const *) y)->str);
+                         ((struct a_word const *) y)->str);
 }
 
 struct a_pattern
@@ -939,7 +939,7 @@ func_filter_filterout (char *o, char **argv, const char *funcname)
       pattail = &pat->next;
 
       if (*pat_iterator != '\0')
-	++pat_iterator;
+        ++pat_iterator;
 
       pat->str = p;
       pat->length = len;
@@ -947,7 +947,7 @@ func_filter_filterout (char *o, char **argv, const char *funcname)
       p[len] = '\0';
       pat->percent = find_percent (p);
       if (pat->percent == 0)
-	literals++;
+        literals++;
     }
   *pattail = 0;
 
@@ -962,7 +962,7 @@ func_filter_filterout (char *o, char **argv, const char *funcname)
       wordtail = &word->next;
 
       if (*word_iterator != '\0')
-	++word_iterator;
+        ++word_iterator;
 
       p[len] = '\0';
       word->str = p;
@@ -980,11 +980,11 @@ func_filter_filterout (char *o, char **argv, const char *funcname)
       hash_init (&a_word_table, words, a_word_hash_1, a_word_hash_2,
                  a_word_hash_cmp);
       for (wp = wordhead; wp != 0; wp = wp->next)
-	{
-	  struct a_word *owp = hash_insert (&a_word_table, wp);
-	  if (owp)
-	    wp->chain = owp;
-	}
+        {
+          struct a_word *owp = hash_insert (&a_word_table, wp);
+          if (owp)
+            wp->chain = owp;
+        }
     }
 
   if (words)
@@ -993,40 +993,40 @@ func_filter_filterout (char *o, char **argv, const char *funcname)
 
       /* Run each pattern through the words, killing words.  */
       for (pp = pathead; pp != 0; pp = pp->next)
-	{
-	  if (pp->percent)
-	    for (wp = wordhead; wp != 0; wp = wp->next)
-	      wp->matched |= pattern_matches (pp->str, pp->percent, wp->str);
-	  else if (hashing)
-	    {
-	      struct a_word a_word_key;
-	      a_word_key.str = pp->str;
-	      a_word_key.length = pp->length;
-	      wp = hash_find_item (&a_word_table, &a_word_key);
-	      while (wp)
-		{
-		  wp->matched |= 1;
-		  wp = wp->chain;
-		}
-	    }
-	  else
-	    for (wp = wordhead; wp != 0; wp = wp->next)
-	      wp->matched |= (wp->length == pp->length
-			      && strneq (pp->str, wp->str, wp->length));
-	}
+        {
+          if (pp->percent)
+            for (wp = wordhead; wp != 0; wp = wp->next)
+              wp->matched |= pattern_matches (pp->str, pp->percent, wp->str);
+          else if (hashing)
+            {
+              struct a_word a_word_key;
+              a_word_key.str = pp->str;
+              a_word_key.length = pp->length;
+              wp = hash_find_item (&a_word_table, &a_word_key);
+              while (wp)
+                {
+                  wp->matched |= 1;
+                  wp = wp->chain;
+                }
+            }
+          else
+            for (wp = wordhead; wp != 0; wp = wp->next)
+              wp->matched |= (wp->length == pp->length
+                              && strneq (pp->str, wp->str, wp->length));
+        }
 
       /* Output the words that matched (or didn't, for filter-out).  */
       for (wp = wordhead; wp != 0; wp = wp->next)
-	if (is_filter ? wp->matched : !wp->matched)
-	  {
-	    o = variable_buffer_output (o, wp->str, strlen (wp->str));
-	    o = variable_buffer_output (o, " ", 1);
-	    doneany = 1;
-	  }
+        if (is_filter ? wp->matched : !wp->matched)
+          {
+            o = variable_buffer_output (o, wp->str, strlen (wp->str));
+            o = variable_buffer_output (o, " ", 1);
+            doneany = 1;
+          }
 
       if (doneany)
-	/* Kill the last space.  */
-	--o;
+        /* Kill the last space.  */
+        --o;
     }
 
   for (pp = pathead; pp != 0; pp = pp->next)
@@ -1051,12 +1051,12 @@ func_strip (char *o, char **argv, const char *funcname UNUSED)
       const char *word_start;
 
       while (isspace ((unsigned char)*p))
-	++p;
+        ++p;
       word_start = p;
       for (i=0; *p != '\0' && !isspace ((unsigned char)*p); ++p, ++i)
-	{}
+        {}
       if (!i)
-	break;
+        break;
       o = variable_buffer_output (o, word_start, i);
       o = variable_buffer_output (o, " ", 1);
       doneany = 1;
@@ -1097,20 +1097,20 @@ func_error (char *o, char **argv, const char *funcname)
   strcpy (p, *argvp);
 
   switch (*funcname) {
-    case 'e':
-      fatal (reading_file, "%s", msg);
+  case 'e':
+    fatal (reading_file, "%s", msg);
 
-    case 'w':
-      error (reading_file, "%s", msg);
-      break;
+  case 'w':
+    error (reading_file, "%s", msg);
+    break;
 
-    case 'i':
-      printf ("%s\n", msg);
-      fflush(stdout);
-      break;
+  case 'i':
+    printf ("%s\n", msg);
+    fflush(stdout);
+    break;
 
-    default:
-      fatal (*expanding_var, "Internal error: func_error: '%s'", funcname);
+  default:
+    fatal (*expanding_var, "Internal error: func_error: '%s'", funcname);
   }
 
   /* The warning function expands to the empty string.  */
@@ -1120,7 +1120,7 @@ func_error (char *o, char **argv, const char *funcname)
 
 /*
   chop argv[0] into words, and sort them.
- */
+*/
 static char *
 func_sort (char *o, char **argv, const char *funcname UNUSED)
 {
@@ -1344,12 +1344,12 @@ static char *
 func_wildcard (char *o, char **argv, const char *funcname UNUSED)
 {
 #ifdef _AMIGA
-   o = wildcard_expansion (argv[0], o);
+  o = wildcard_expansion (argv[0], o);
 #else
-   char *p = string_glob (argv[0]);
-   o = variable_buffer_output (o, p, strlen (p));
+  char *p = string_glob (argv[0]);
+  o = variable_buffer_output (o, p, strlen (p));
 #endif
-   return o;
+  return o;
 }
 
 /*
@@ -1394,7 +1394,7 @@ func_value (char *o, char **argv, const char *funcname UNUSED)
 
 /*
   \r  is replaced on UNIX as well. Is this desirable?
- */
+*/
 static void
 fold_newlines (char *buffer, unsigned int *length)
 {
@@ -1405,16 +1405,16 @@ fold_newlines (char *buffer, unsigned int *length)
   for (; *src != '\0'; ++src)
     {
       if (src[0] == '\r' && src[1] == '\n')
-	continue;
+        continue;
       if (*src == '\n')
-	{
-	  *dst++ = ' ';
-	}
+        {
+          *dst++ = ' ';
+        }
       else
-	{
-	  last_nonnl = dst;
-	  *dst++ = *src;
-	}
+        {
+          last_nonnl = dst;
+          *dst++ = *src;
+        }
     }
   *(++last_nonnl) = '\0';
   *length = last_nonnl - buffer;
@@ -1449,25 +1449,25 @@ windows32_openpipe (int *pipedes, pid_t *pid_p, char **command_argv, char **envp
   saAttr.lpSecurityDescriptor = NULL;
 
   if (DuplicateHandle (GetCurrentProcess(),
-		      GetStdHandle(STD_INPUT_HANDLE),
-		      GetCurrentProcess(),
-		      &hIn,
-		      0,
-		      TRUE,
-		      DUPLICATE_SAME_ACCESS) == FALSE) {
+                       GetStdHandle(STD_INPUT_HANDLE),
+                       GetCurrentProcess(),
+                       &hIn,
+                       0,
+                       TRUE,
+                       DUPLICATE_SAME_ACCESS) == FALSE) {
     fatal (NILF, _("windows32_openpipe(): DuplicateHandle(In) failed (e=%ld)\n"),
-	   GetLastError());
+           GetLastError());
 
   }
   if (DuplicateHandle(GetCurrentProcess(),
-		      GetStdHandle(STD_ERROR_HANDLE),
-		      GetCurrentProcess(),
-		      &hErr,
-		      0,
-		      TRUE,
-		      DUPLICATE_SAME_ACCESS) == FALSE) {
+                      GetStdHandle(STD_ERROR_HANDLE),
+                      GetCurrentProcess(),
+                      &hErr,
+                      0,
+                      TRUE,
+                      DUPLICATE_SAME_ACCESS) == FALSE) {
     fatal (NILF, _("windows32_open_pipe(): DuplicateHandle(Err) failed (e=%ld)\n"),
-	   GetLastError());
+           GetLastError());
   }
 
   if (!CreatePipe(&hChildOutRd, &hChildOutWr, &saAttr, 0))
@@ -1491,22 +1491,22 @@ windows32_openpipe (int *pipedes, pid_t *pid_p, char **command_argv, char **envp
     /* set the pid for returning to caller */
     *pid_p = (pid_t) hProcess;
 
-  /* set up to read data from child */
-  pipedes[0] = _open_osfhandle((intptr_t) hChildOutRd, O_RDONLY);
+    /* set up to read data from child */
+    pipedes[0] = _open_osfhandle((intptr_t) hChildOutRd, O_RDONLY);
 
-  /* this will be closed almost right away */
-  pipedes[1] = _open_osfhandle((intptr_t) hChildOutWr, O_APPEND);
+    /* this will be closed almost right away */
+    pipedes[1] = _open_osfhandle((intptr_t) hChildOutWr, O_APPEND);
   } else {
     /* reap/cleanup the failed process */
-	process_cleanup(hProcess);
+    process_cleanup(hProcess);
 
     /* close handles which were duplicated, they weren't used */
-	CloseHandle(hIn);
-	CloseHandle(hErr);
+    CloseHandle(hIn);
+    CloseHandle(hErr);
 
-	/* close pipe handles, they won't be used */
-	CloseHandle(hChildOutRd);
-	CloseHandle(hChildOutWr);
+    /* close pipe handles, they won't be used */
+    CloseHandle(hChildOutRd);
+    CloseHandle(hChildOutWr);
 
     /* set status for return */
     pipedes[0] = pipedes[1] = -1;
@@ -1536,7 +1536,7 @@ msdos_openpipe (int* pipedes, int *pidp, char *text)
     {
       char buf[PATH_MAX + 7];
       /* This makes sure $SHELL value is used by $(shell), even
-	 though the target environment is not passed to it.  */
+         though the target environment is not passed to it.  */
       sprintf (buf, "SHELL=%s", sh->value);
       putenv (buf);
     }
@@ -1555,9 +1555,9 @@ msdos_openpipe (int* pipedes, int *pidp, char *text)
       pipedes[0] = -1;
       *pidp = -1;
       if (dos_status)
-	errno = EINTR;
+        errno = EINTR;
       else if (errno == 0)
-	errno = ENOMEM;
+        errno = ENOMEM;
       shell_function_completed = -1;
     }
   else
@@ -1573,7 +1573,7 @@ msdos_openpipe (int* pipedes, int *pidp, char *text)
 
 /*
   Do shell spawning, with the naughty bits for different OSes.
- */
+*/
 
 #ifdef VMS
 
@@ -1613,7 +1613,7 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
 
      See Savannah bug #10593.
 
-  envp = target_environment (NILF);
+     envp = target_environment (NILF);
   */
 
   envp = environ;
@@ -1646,11 +1646,11 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
     }
   else
 #else
-  if (pipe (pipedes) < 0)
-    {
-      perror_with_name (error_prefix, "pipe");
-      return o;
-    }
+    if (pipe (pipedes) < 0)
+      {
+        perror_with_name (error_prefix, "pipe");
+        return o;
+      }
 
 # ifdef __EMX__
   /* close some handles that are unnecessary for the child process */
@@ -1658,10 +1658,13 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
   CLOSE_ON_EXEC(pipedes[0]);
   /* Never use fork()/exec() here! Use spawn() instead in exec_command() */
   pid = child_execute_job (0, pipedes[1], command_argv, envp);
+
+
   if (pid < 0)
     perror_with_name (error_prefix, "spawn");
 # else /* ! __EMX__ */
   pid = vfork ();
+
   if (pid < 0)
     perror_with_name (error_prefix, "fork");
   else if (pid == 0)
@@ -1685,10 +1688,10 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
       free (command_argv);
 
       /* Close the write side of the pipe.  We test for -1, since
-	 pipedes[1] is -1 on MS-Windows, and some versions of MS
-	 libraries barf when `close' is called with -1.  */
+         pipedes[1] is -1 on MS-Windows, and some versions of MS
+         libraries barf when `close' is called with -1.  */
       if (pipedes[1] >= 0)
-	close (pipedes[1]);
+        close (pipedes[1]);
 #endif
 
       /* Set up and read from the pipe.  */
@@ -1698,23 +1701,23 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
 
       /* Read from the pipe until it gets EOF.  */
       for (i = 0; ; i += cc)
-	{
-	  if (i == maxlen)
-	    {
-	      maxlen += 512;
-	      buffer = xrealloc (buffer, maxlen + 1);
-	    }
+        {
+          if (i == maxlen)
+            {
+              maxlen += 512;
+              buffer = xrealloc (buffer, maxlen + 1);
+            }
 
-	  EINTRLOOP (cc, read (pipedes[0], &buffer[i], maxlen - i));
-	  if (cc <= 0)
-	    break;
-	}
+          EINTRLOOP (cc, read (pipedes[0], &buffer[i], maxlen - i));
+          if (cc <= 0)
+            break;
+        }
       buffer[i] = '\0';
 
       /* Close the read side of the pipe.  */
 #ifdef  __MSDOS__
       if (fpipe)
-	(void) pclose (fpipe);
+        (void) pclose (fpipe);
 #else
       (void) close (pipedes[0]);
 #endif
@@ -1722,34 +1725,34 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
       /* Loop until child_handler or reap_children()  sets
          shell_function_completed to the status of our child shell.  */
       while (shell_function_completed == 0)
-	reap_children (1, 0);
+        reap_children (1, 0);
 
       if (batch_filename) {
-	DB (DB_VERBOSE, (_("Cleaning up temporary batch file %s\n"),
-                       batch_filename));
-	remove (batch_filename);
-	free (batch_filename);
+        DB (DB_VERBOSE, (_("Cleaning up temporary batch file %s\n"),
+                         batch_filename));
+        remove (batch_filename);
+        free (batch_filename);
       }
       shell_function_pid = 0;
 
       /* The child_handler function will set shell_function_completed
-	 to 1 when the child dies normally, or to -1 if it
-	 dies with status 127, which is most likely an exec fail.  */
+         to 1 when the child dies normally, or to -1 if it
+         dies with status 127, which is most likely an exec fail.  */
 
       if (shell_function_completed == -1)
-	{
-	  /* This likely means that the execvp failed, so we should just
-	     write the error message in the pipe from the child.  */
-	  fputs (buffer, stderr);
-	  fflush (stderr);
-	}
+        {
+          /* This likely means that the execvp failed, so we should just
+             write the error message in the pipe from the child.  */
+          fputs (buffer, stderr);
+          fflush (stderr);
+        }
       else
-	{
-	  /* The child finished normally.  Replace all newlines in its output
-	     with spaces, and put that in the variable output buffer.  */
-	  fold_newlines (buffer, &i);
-	  o = variable_buffer_output (o, buffer, i);
-	}
+        {
+          /* The child finished normally.  Replace all newlines in its output
+             with spaces, and put that in the variable output buffer.  */
+          fold_newlines (buffer, &i);
+          o = variable_buffer_output (o, buffer, i);
+        }
 
       free (buffer);
     }
@@ -1757,7 +1760,7 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
   return o;
 }
 
-#else	/* _AMIGA */
+#else /* _AMIGA */
 
 /* Do the Amiga version of func_shell.  */
 
@@ -1827,14 +1830,14 @@ func_shell (char *o, char **argv, const char *funcname)
   do
     {
       if (i == maxlen)
-	{
-	  maxlen += 512;
-	  buffer = xrealloc (buffer, maxlen + 1);
-	}
+        {
+          maxlen += 512;
+          buffer = xrealloc (buffer, maxlen + 1);
+        }
 
       cc = Read (child_stdout, &buffer[i], maxlen - i);
       if (cc > 0)
-	i += cc;
+        i += cc;
     } while (cc > 0);
 
   Close (child_stdout);
@@ -1851,7 +1854,7 @@ func_shell (char *o, char **argv, const char *funcname)
 
 /*
   equality. Return is string-boolean, ie, the empty string is false.
- */
+*/
 static char *
 func_eq (char *o, char **argv, char *funcname)
 {
@@ -1863,7 +1866,7 @@ func_eq (char *o, char **argv, char *funcname)
 
 /*
   string-boolean not operator.
- */
+*/
 static char *
 func_not (char *o, char **argv, char *funcname)
 {
@@ -1905,26 +1908,26 @@ abspath (const char *name, char *apath)
     {
       /* It is unlikely we would make it until here but just to make sure. */
       if (!starting_directory)
-	return NULL;
+        return NULL;
 
       strcpy (apath, starting_directory);
 
 #ifdef HAVE_DOS_PATHS
       if (IS_PATHSEP(name[0]))
-	{
-	  if (IS_PATHSEP(name[1]))
-	    {
-	      /* A UNC.  Don't prepend a drive letter.  */
-	      apath[0] = name[0];
-	      apath[1] = name[1];
-	      root_len = 2;
-	    }
-	  /* We have /foo, an absolute file name except for the drive
-	     letter.  Assume the missing drive letter is the current
-	     drive, which we can get if we remove from starting_directory
-	     everything past the root directory.  */
-	  apath[root_len] = '\0';
-	}
+        {
+          if (IS_PATHSEP(name[1]))
+            {
+              /* A UNC.  Don't prepend a drive letter.  */
+              apath[0] = name[0];
+              apath[1] = name[1];
+              root_len = 2;
+            }
+          /* We have /foo, an absolute file name except for the drive
+             letter.  Assume the missing drive letter is the current
+             drive, which we can get if we remove from starting_directory
+             everything past the root directory.  */
+          apath[root_len] = '\0';
+        }
 #endif
 
       dest = strchr (apath, '\0');
@@ -1938,17 +1941,17 @@ abspath (const char *name, char *apath)
       name += root_len;
 #ifdef HAVE_DOS_PATHS
       if (!IS_PATHSEP(apath[2]))
-	{
-	  /* Convert d:foo into d:./foo and increase root_len.  */
-	  apath[2] = '.';
-	  apath[3] = '/';
-	  dest++;
-	  root_len++;
-	  /* strncpy above copied one character too many.  */
-	  name--;
-	}
+        {
+          /* Convert d:foo into d:./foo and increase root_len.  */
+          apath[2] = '.';
+          apath[3] = '/';
+          dest++;
+          root_len++;
+          /* strncpy above copied one character too many.  */
+          name--;
+        }
       else
-	apath[2] = '/';	/* make sure it's a forward slash */
+        apath[2] = '/'; /* make sure it's a forward slash */
 #endif
     }
 
@@ -1958,7 +1961,7 @@ abspath (const char *name, char *apath)
 
       /* Skip sequence of multiple path-separators.  */
       while (IS_PATHSEP(*start))
-	++start;
+        ++start;
 
       /* Find end of path component.  */
       for (end = start; *end != '\0' && !IS_PATHSEP(*end); ++end)
@@ -1967,27 +1970,27 @@ abspath (const char *name, char *apath)
       len = end - start;
 
       if (len == 0)
-	break;
+        break;
       else if (len == 1 && start[0] == '.')
-	/* nothing */;
+        /* nothing */;
       else if (len == 2 && start[0] == '.' && start[1] == '.')
-	{
-	  /* Back up to previous component, ignore if at root already.  */
-	  if (dest > apath + root_len)
-	    for (--dest; !IS_PATHSEP(dest[-1]); --dest);
-	}
+        {
+          /* Back up to previous component, ignore if at root already.  */
+          if (dest > apath + root_len)
+            for (--dest; !IS_PATHSEP(dest[-1]); --dest);
+        }
       else
-	{
-	  if (!IS_PATHSEP(dest[-1]))
+        {
+          if (!IS_PATHSEP(dest[-1]))
             *dest++ = '/';
 
-	  if (dest + len >= apath_limit)
+          if (dest + len >= apath_limit)
             return NULL;
 
-	  dest = memcpy (dest, start, len);
+          dest = memcpy (dest, start, len);
           dest += len;
-	  *dest = '\0';
-	}
+          *dest = '\0';
+        }
     }
 
   /* Unless it is root strip trailing separator.  */
@@ -2027,7 +2030,7 @@ func_realpath (char *o, char **argv, const char *funcname UNUSED)
 #else
               abspath (in, out) && stat (out, &st) == 0
 #endif
-             )
+              )
             {
               o = variable_buffer_output (o, out, strlen (out));
               o = variable_buffer_output (o, " ", 1);
@@ -2093,48 +2096,48 @@ static char *func_call (char *o, char **argv, const char *funcname);
 
 
 static struct function_table_entry function_table_init[] =
-{
- /* Name/size */                    /* MIN MAX EXP? Function */
-  { STRING_SIZE_TUPLE("abspath"),       0,  1,  1,  func_abspath},
-  { STRING_SIZE_TUPLE("addprefix"),     2,  2,  1,  func_addsuffix_addprefix},
-  { STRING_SIZE_TUPLE("addsuffix"),     2,  2,  1,  func_addsuffix_addprefix},
-  { STRING_SIZE_TUPLE("basename"),      0,  1,  1,  func_basename_dir},
-  { STRING_SIZE_TUPLE("dir"),           0,  1,  1,  func_basename_dir},
-  { STRING_SIZE_TUPLE("notdir"),        0,  1,  1,  func_notdir_suffix},
-  { STRING_SIZE_TUPLE("subst"),         3,  3,  1,  func_subst},
-  { STRING_SIZE_TUPLE("suffix"),        0,  1,  1,  func_notdir_suffix},
-  { STRING_SIZE_TUPLE("filter"),        2,  2,  1,  func_filter_filterout},
-  { STRING_SIZE_TUPLE("filter-out"),    2,  2,  1,  func_filter_filterout},
-  { STRING_SIZE_TUPLE("findstring"),    2,  2,  1,  func_findstring},
-  { STRING_SIZE_TUPLE("firstword"),     0,  1,  1,  func_firstword},
-  { STRING_SIZE_TUPLE("flavor"),        0,  1,  1,  func_flavor},
-  { STRING_SIZE_TUPLE("join"),          2,  2,  1,  func_join},
-  { STRING_SIZE_TUPLE("lastword"),      0,  1,  1,  func_lastword},
-  { STRING_SIZE_TUPLE("patsubst"),      3,  3,  1,  func_patsubst},
-  { STRING_SIZE_TUPLE("realpath"),      0,  1,  1,  func_realpath},
-  { STRING_SIZE_TUPLE("shell"),         0,  1,  1,  func_shell},
-  { STRING_SIZE_TUPLE("sort"),          0,  1,  1,  func_sort},
-  { STRING_SIZE_TUPLE("strip"),         0,  1,  1,  func_strip},
-  { STRING_SIZE_TUPLE("wildcard"),      0,  1,  1,  func_wildcard},
-  { STRING_SIZE_TUPLE("word"),          2,  2,  1,  func_word},
-  { STRING_SIZE_TUPLE("wordlist"),      3,  3,  1,  func_wordlist},
-  { STRING_SIZE_TUPLE("words"),         0,  1,  1,  func_words},
-  { STRING_SIZE_TUPLE("origin"),        0,  1,  1,  func_origin},
-  { STRING_SIZE_TUPLE("foreach"),       3,  3,  0,  func_foreach},
-  { STRING_SIZE_TUPLE("call"),          1,  0,  1,  func_call},
-  { STRING_SIZE_TUPLE("info"),          0,  1,  1,  func_error},
-  { STRING_SIZE_TUPLE("error"),         0,  1,  1,  func_error},
-  { STRING_SIZE_TUPLE("warning"),       0,  1,  1,  func_error},
-  { STRING_SIZE_TUPLE("if"),            2,  3,  0,  func_if},
-  { STRING_SIZE_TUPLE("or"),            1,  0,  0,  func_or},
-  { STRING_SIZE_TUPLE("and"),           1,  0,  0,  func_and},
-  { STRING_SIZE_TUPLE("value"),         0,  1,  1,  func_value},
-  { STRING_SIZE_TUPLE("eval"),          0,  1,  1,  func_eval},
+  {
+    /* Name/size */                    /* MIN MAX EXP? Function */
+    { STRING_SIZE_TUPLE("abspath"),       0,  1,  1,  func_abspath},
+    { STRING_SIZE_TUPLE("addprefix"),     2,  2,  1,  func_addsuffix_addprefix},
+    { STRING_SIZE_TUPLE("addsuffix"),     2,  2,  1,  func_addsuffix_addprefix},
+    { STRING_SIZE_TUPLE("basename"),      0,  1,  1,  func_basename_dir},
+    { STRING_SIZE_TUPLE("dir"),           0,  1,  1,  func_basename_dir},
+    { STRING_SIZE_TUPLE("notdir"),        0,  1,  1,  func_notdir_suffix},
+    { STRING_SIZE_TUPLE("subst"),         3,  3,  1,  func_subst},
+    { STRING_SIZE_TUPLE("suffix"),        0,  1,  1,  func_notdir_suffix},
+    { STRING_SIZE_TUPLE("filter"),        2,  2,  1,  func_filter_filterout},
+    { STRING_SIZE_TUPLE("filter-out"),    2,  2,  1,  func_filter_filterout},
+    { STRING_SIZE_TUPLE("findstring"),    2,  2,  1,  func_findstring},
+    { STRING_SIZE_TUPLE("firstword"),     0,  1,  1,  func_firstword},
+    { STRING_SIZE_TUPLE("flavor"),        0,  1,  1,  func_flavor},
+    { STRING_SIZE_TUPLE("join"),          2,  2,  1,  func_join},
+    { STRING_SIZE_TUPLE("lastword"),      0,  1,  1,  func_lastword},
+    { STRING_SIZE_TUPLE("patsubst"),      3,  3,  1,  func_patsubst},
+    { STRING_SIZE_TUPLE("realpath"),      0,  1,  1,  func_realpath},
+    { STRING_SIZE_TUPLE("shell"),         0,  1,  1,  func_shell},
+    { STRING_SIZE_TUPLE("sort"),          0,  1,  1,  func_sort},
+    { STRING_SIZE_TUPLE("strip"),         0,  1,  1,  func_strip},
+    { STRING_SIZE_TUPLE("wildcard"),      0,  1,  1,  func_wildcard},
+    { STRING_SIZE_TUPLE("word"),          2,  2,  1,  func_word},
+    { STRING_SIZE_TUPLE("wordlist"),      3,  3,  1,  func_wordlist},
+    { STRING_SIZE_TUPLE("words"),         0,  1,  1,  func_words},
+    { STRING_SIZE_TUPLE("origin"),        0,  1,  1,  func_origin},
+    { STRING_SIZE_TUPLE("foreach"),       3,  3,  0,  func_foreach},
+    { STRING_SIZE_TUPLE("call"),          1,  0,  1,  func_call},
+    { STRING_SIZE_TUPLE("info"),          0,  1,  1,  func_error},
+    { STRING_SIZE_TUPLE("error"),         0,  1,  1,  func_error},
+    { STRING_SIZE_TUPLE("warning"),       0,  1,  1,  func_error},
+    { STRING_SIZE_TUPLE("if"),            2,  3,  0,  func_if},
+    { STRING_SIZE_TUPLE("or"),            1,  0,  0,  func_or},
+    { STRING_SIZE_TUPLE("and"),           1,  0,  0,  func_and},
+    { STRING_SIZE_TUPLE("value"),         0,  1,  1,  func_value},
+    { STRING_SIZE_TUPLE("eval"),          0,  1,  1,  func_eval},
 #ifdef EXPERIMENTAL
-  { STRING_SIZE_TUPLE("eq"),            2,  2,  1,  func_eq},
-  { STRING_SIZE_TUPLE("not"),           0,  1,  1,  func_not},
+    { STRING_SIZE_TUPLE("eq"),            2,  2,  1,  func_eq},
+    { STRING_SIZE_TUPLE("not"),           0,  1,  1,  func_not},
 #endif
-};
+  };
 
 #define FUNCTION_TABLE_ENTRIES (sizeof (function_table_init) / sizeof (struct function_table_entry))
 
@@ -2209,8 +2212,8 @@ handle_function (char **op, const char **stringp)
 
   if (count >= 0)
     fatal (*expanding_var,
-	   _("unterminated call to function `%s': missing `%c'"),
-	   entry_p->name, closeparen);
+           _("unterminated call to function `%s': missing `%c'"),
+           entry_p->name, closeparen);
 
   *stringp = end;
 
@@ -2391,8 +2394,8 @@ void
 hash_init_function_table (void)
 {
   hash_init (&function_table, FUNCTION_TABLE_ENTRIES * 2,
-	     function_table_entry_hash_1, function_table_entry_hash_2,
-	     function_table_entry_hash_cmp);
+             function_table_entry_hash_1, function_table_entry_hash_2,
+             function_table_entry_hash_cmp);
   hash_load (&function_table, function_table_init,
-	     FUNCTION_TABLE_ENTRIES, sizeof (struct function_table_entry));
+             FUNCTION_TABLE_ENTRIES, sizeof (struct function_table_entry));
 }

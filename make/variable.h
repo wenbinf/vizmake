@@ -23,8 +23,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.  */
 enum variable_origin
   {
     o_default,		/* Variable from the default set.  */
-    o_env,		/* Variable from environment.  */
-    o_file,		/* Variable given in a makefile.  */
+    o_env,		/* Variable from environment.  1 */
+    o_file,		/* Variable given in a makefile.  2 */
     o_env_override,	/* Variable from environment, if -e.  */
     o_command,		/* Variable given by user.  */
     o_override, 	/* Variable from an `override' directive.  */

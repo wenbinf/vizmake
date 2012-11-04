@@ -1,20 +1,20 @@
 /* Target file management for GNU Make.
-Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-2010 Free Software Foundation, Inc.
-This file is part of GNU Make.
+   Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
+   This file is part of GNU Make.
 
-GNU Make is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
+   GNU Make is free software; you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation; either version 3 of the License, or (at your option) any later
+   version.
 
-GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   GNU Make is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with
+   this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "make.h"
 
@@ -56,11 +56,11 @@ static int
 file_hash_cmp (const void *x, const void *y)
 {
   return_ISTRING_COMPARE (((struct file const *) x)->hname,
-			  ((struct file const *) y)->hname);
+                          ((struct file const *) y)->hname);
 }
 
-#ifndef	FILE_BUCKETS
-#define FILE_BUCKETS	1007
+#ifndef FILE_BUCKETS
+#define FILE_BUCKETS  1007
 #endif
 static struct hash_table files;
 
@@ -69,7 +69,7 @@ static int all_secondary = 0;
 
 /* Access the hash table of all file records.
    lookup_file  given a name, return the struct file * for that name,
-                or nil if there is none.
+   or nil if there is none.
 */
 
 struct file *
@@ -101,24 +101,24 @@ lookup_file (const char *name)
 # endif
 
   while (name[0] == '[' && name[1] == ']' && name[2] != '\0')
-      name += 2;
+    name += 2;
 #endif
   while (name[0] == '.'
 #ifdef HAVE_DOS_PATHS
-	 && (name[1] == '/' || name[1] == '\\')
+         && (name[1] == '/' || name[1] == '\\')
 #else
-	 && name[1] == '/'
+         && name[1] == '/'
 #endif
-	 && name[2] != '\0')
+         && name[2] != '\0')
     {
       name += 2;
       while (*name == '/'
 #ifdef HAVE_DOS_PATHS
-	     || *name == '\\'
+             || *name == '\\'
 #endif
-	     )
-	/* Skip following slashes: ".//foo" is "foo", not "/foo".  */
-	++name;
+             )
+        /* Skip following slashes: ".//foo" is "foo", not "/foo".  */
+        ++name;
     }
 
   if (*name == '\0')
@@ -126,9 +126,9 @@ lookup_file (const char *name)
 #if defined(VMS)
     name = "[]";
 #elif defined(_AMIGA)
-    name = "";
+  name = "";
 #else
-    name = "./";
+  name = "./";
 #endif
 
   file_key.hname = name;
@@ -144,7 +144,7 @@ lookup_file (const char *name)
 /* Look up a file record for file NAME and return it.
    Create a new record if one doesn't exist.  NAME will be stored in the
    new record so it should be constant or in the strcache etc.
- */
+*/
 
 struct file *
 enter_file (const char *name)
@@ -365,52 +365,52 @@ remove_intermediates (int sig)
   for ( ; file_slot < file_end; file_slot++)
     if (! HASH_VACANT (*file_slot))
       {
-	struct file *f = *file_slot;
+        struct file *f = *file_slot;
         /* Is this file eligible for automatic deletion?
            Yes, IFF: it's marked intermediate, it's not secondary, it wasn't
            given on the command line, and it's either a -include makefile or
            it's not precious.  */
-	if (f->intermediate && (f->dontcare || !f->precious)
-	    && !f->secondary && !f->cmd_target)
-	  {
-	    int status;
-	    if (f->update_status == -1)
-	      /* If nothing would have created this file yet,
-		 don't print an "rm" command for it.  */
-	      continue;
-	    if (just_print_flag)
-	      status = 0;
-	    else
-	      {
-		status = unlink (f->name);
-		if (status < 0 && errno == ENOENT)
-		  continue;
-	      }
-	    if (!f->dontcare)
-	      {
-		if (sig)
-		  error (NILF, _("*** Deleting intermediate file `%s'"), f->name);
-		else
-		  {
-		    if (! doneany)
-		      DB (DB_BASIC, (_("Removing intermediate files...\n")));
-		    if (!silent_flag)
-		      {
-			if (! doneany)
-			  {
-			    fputs ("rm ", stdout);
-			    doneany = 1;
-			  }
-			else
-			  putchar (' ');
-			fputs (f->name, stdout);
-			fflush (stdout);
-		      }
-		  }
-		if (status < 0)
-		  perror_with_name ("unlink: ", f->name);
-	      }
-	  }
+        if (f->intermediate && (f->dontcare || !f->precious)
+            && !f->secondary && !f->cmd_target)
+          {
+            int status;
+            if (f->update_status == -1)
+              /* If nothing would have created this file yet,
+                 don't print an "rm" command for it.  */
+              continue;
+            if (just_print_flag)
+              status = 0;
+            else
+              {
+                status = unlink (f->name);
+                if (status < 0 && errno == ENOENT)
+                  continue;
+              }
+            if (!f->dontcare)
+              {
+                if (sig)
+                  error (NILF, _("*** Deleting intermediate file `%s'"), f->name);
+                else
+                  {
+                    if (! doneany)
+                      DB (DB_BASIC, (_("Removing intermediate files...\n")));
+                    if (!silent_flag)
+                      {
+                        if (! doneany)
+                          {
+                            fputs ("rm ", stdout);
+                            doneany = 1;
+                          }
+                        else
+                          putchar (' ');
+                        fputs (f->name, stdout);
+                        fflush (stdout);
+                      }
+                  }
+                if (status < 0)
+                  perror_with_name ("unlink: ", f->name);
+              }
+          }
       }
 
   if (doneany && !sig)
@@ -422,7 +422,7 @@ remove_intermediates (int sig)
 
 /* Given a string containing prerequisites (fully expanded), break it up into
    a struct dep list.  Enter each of these prereqs into the file database.
- */
+*/
 struct dep *
 split_prereqs (char *p)
 {
@@ -693,32 +693,32 @@ snap_deps (void)
   for (f = lookup_file (".PRECIOUS"); f != 0; f = f->prev)
     for (d = f->deps; d != 0; d = d->next)
       for (f2 = d->file; f2 != 0; f2 = f2->prev)
-	f2->precious = 1;
+        f2->precious = 1;
 
   for (f = lookup_file (".LOW_RESOLUTION_TIME"); f != 0; f = f->prev)
     for (d = f->deps; d != 0; d = d->next)
       for (f2 = d->file; f2 != 0; f2 = f2->prev)
-	f2->low_resolution_time = 1;
+        f2->low_resolution_time = 1;
 
   for (f = lookup_file (".PHONY"); f != 0; f = f->prev)
     for (d = f->deps; d != 0; d = d->next)
       for (f2 = d->file; f2 != 0; f2 = f2->prev)
-	{
-	  /* Mark this file as phony nonexistent target.  */
-	  f2->phony = 1;
+        {
+          /* Mark this file as phony nonexistent target.  */
+          f2->phony = 1;
           f2->is_target = 1;
-	  f2->last_mtime = NONEXISTENT_MTIME;
-	  f2->mtime_before_update = NONEXISTENT_MTIME;
-	}
+          f2->last_mtime = NONEXISTENT_MTIME;
+          f2->mtime_before_update = NONEXISTENT_MTIME;
+        }
 
   for (f = lookup_file (".INTERMEDIATE"); f != 0; f = f->prev)
     /* Mark .INTERMEDIATE deps as intermediate files.  */
     for (d = f->deps; d != 0; d = d->next)
       for (f2 = d->file; f2 != 0; f2 = f2->prev)
         f2->intermediate = 1;
-    /* .INTERMEDIATE with no deps does nothing.
-       Marking all files as intermediates is useless since the goal targets
-       would be deleted after they are built.  */
+  /* .INTERMEDIATE with no deps does nothing.
+     Marking all files as intermediates is useless since the goal targets
+     would be deleted after they are built.  */
 
   for (f = lookup_file (".SECONDARY"); f != 0; f = f->prev)
     /* Mark .SECONDARY deps as both intermediate and secondary.  */
@@ -726,7 +726,7 @@ snap_deps (void)
       for (d = f->deps; d != 0; d = d->next)
         for (f2 = d->file; f2 != 0; f2 = f2->prev)
           f2->intermediate = f2->secondary = 1;
-    /* .SECONDARY with no deps listed marks *all* files that way.  */
+  /* .SECONDARY with no deps listed marks *all* files that way.  */
     else
       {
         all_secondary = 1;
@@ -741,22 +741,22 @@ snap_deps (void)
   if (f != 0 && f->is_target)
     {
       if (f->deps == 0)
-	ignore_errors_flag = 1;
+        ignore_errors_flag = 1;
       else
-	for (d = f->deps; d != 0; d = d->next)
-	  for (f2 = d->file; f2 != 0; f2 = f2->prev)
-	    f2->command_flags |= COMMANDS_NOERROR;
+        for (d = f->deps; d != 0; d = d->next)
+          for (f2 = d->file; f2 != 0; f2 = f2->prev)
+            f2->command_flags |= COMMANDS_NOERROR;
     }
 
   f = lookup_file (".SILENT");
   if (f != 0 && f->is_target)
     {
       if (f->deps == 0)
-	silent_flag = 1;
+        silent_flag = 1;
       else
-	for (d = f->deps; d != 0; d = d->next)
-	  for (f2 = d->file; f2 != 0; f2 = f2->prev)
-	    f2->command_flags |= COMMANDS_SILENT;
+        for (d = f->deps; d != 0; d = d->next)
+          for (f2 = d->file; f2 != 0; f2 = f2->prev)
+            f2->command_flags |= COMMANDS_SILENT;
     }
 
   f = lookup_file (".NOTPARALLEL");
@@ -766,8 +766,8 @@ snap_deps (void)
 #ifndef NO_MINUS_C_MINUS_O
   /* If .POSIX was defined, remove OUTPUT_OPTION to comply.  */
   /* This needs more work: what if the user sets this in the makefile?
-  if (posix_pedantic)
-    define_variable_cname ("OUTPUT_OPTION", "", o_default, 1);
+     if (posix_pedantic)
+     define_variable_cname ("OUTPUT_OPTION", "", o_default, 1);
   */
 #endif
 }
@@ -795,13 +795,13 @@ file_timestamp_cons (const char *fname, time_t s, int ns)
   FILE_TIMESTAMP ts = product + offset;
 
   if (! (s <= FILE_TIMESTAMP_S (ORDINARY_MTIME_MAX)
-	 && product <= ts && ts <= ORDINARY_MTIME_MAX))
+         && product <= ts && ts <= ORDINARY_MTIME_MAX))
     {
       char buf[FILE_TIMESTAMP_PRINT_LEN_BOUND + 1];
       ts = s <= OLD_MTIME ? ORDINARY_MTIME_MIN : ORDINARY_MTIME_MAX;
       file_timestamp_sprintf (buf, ts);
       error (NILF, _("%s: Timestamp out of range; substituting %s"),
-	     fname ? fname : _("Current time"), buf);
+             fname ? fname : _("Current time"), buf);
     }
 
   return ts;
@@ -825,10 +825,10 @@ file_timestamp_now (int *resolution)
     struct timespec timespec;
     if (clock_gettime (CLOCK_REALTIME, &timespec) == 0)
       {
-	r = 1;
-	s = timespec.tv_sec;
-	ns = timespec.tv_nsec;
-	goto got_time;
+        r = 1;
+        s = timespec.tv_sec;
+        ns = timespec.tv_nsec;
+        goto got_time;
       }
   }
 # endif
@@ -837,10 +837,10 @@ file_timestamp_now (int *resolution)
     struct timeval timeval;
     if (gettimeofday (&timeval, 0) == 0)
       {
-	r = 1000;
-	s = timeval.tv_sec;
-	ns = timeval.tv_usec * 1000;
-	goto got_time;
+        r = 1000;
+        s = timeval.tv_sec;
+        ns = timeval.tv_usec * 1000;
+        goto got_time;
       }
   }
 # endif
@@ -867,8 +867,8 @@ file_timestamp_sprintf (char *p, FILE_TIMESTAMP ts)
 
   if (tm)
     sprintf (p, "%04d-%02d-%02d %02d:%02d:%02d",
-	     tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-	     tm->tm_hour, tm->tm_min, tm->tm_sec);
+             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+             tm->tm_hour, tm->tm_min, tm->tm_sec);
   else if (t < 0)
     sprintf (p, "%ld", (long) t);
   else
@@ -945,7 +945,7 @@ print_file (const void *item)
       const struct dep *d;
       fputs (_("#  Also makes:"), stdout);
       for (d = f->also_make; d != 0; d = d->next)
-	printf (" %s", dep_name (d));
+        printf (" %s", dep_name (d));
       putchar ('\n');
     }
   if (f->last_mtime == UNKNOWN_MTIME)
@@ -973,25 +973,25 @@ print_file (const void *item)
     case cs_not_started:
     case cs_finished:
       switch (f->update_status)
-	{
-	case -1:
-	  break;
-	case 0:
-	  puts (_("#  Successfully updated."));
-	  break;
-	case 1:
-	  assert (question_flag);
-	  puts (_("#  Needs to be updated (-q is set)."));
-	  break;
-	case 2:
-	  puts (_("#  Failed to be updated."));
-	  break;
-	default:
-	  puts (_("#  Invalid value in `update_status' member!"));
-	  fflush (stdout);
-	  fflush (stderr);
-	  abort ();
-	}
+        {
+        case -1:
+          break;
+        case 0:
+          puts (_("#  Successfully updated."));
+          break;
+        case 1:
+          assert (question_flag);
+          puts (_("#  Needs to be updated (-q is set)."));
+          break;
+        case 2:
+          puts (_("#  Failed to be updated."));
+          break;
+        default:
+          puts (_("#  Invalid value in `update_status' member!"));
+          fflush (stdout);
+          fflush (stderr);
+          abort ();
+        }
       break;
     default:
       puts (_("#  Invalid value in `command_state' member!"));
@@ -1020,14 +1020,14 @@ print_file_data_base (void)
   fputs (_("\n# files hash-table stats:\n# "), stdout);
   hash_print_stats (&files, stdout);
 }
-
+
 /* Verify the integrity of the data base of files.  */
 
-#define VERIFY_CACHED(_p,_n) \
-    do{\
-        if (_p->_n && _p->_n[0] && !strcache_iscached (_p->_n)) \
-          error (NULL, "%s: Field '%s' not cached: %s\n", _p->name, # _n, _p->_n); \
-    }while(0)
+#define VERIFY_CACHED(_p,_n)                                            \
+  do{                                                                   \
+    if (_p->_n && _p->_n[0] && !strcache_iscached (_p->_n))             \
+      error (NULL, "%s: Field '%s' not cached: %s\n", _p->name, # _n, _p->_n); \
+  }while(0)
 
 static void
 verify_file (const void *item)
@@ -1110,3 +1110,45 @@ init_hash_files (void)
 }
 
 /* EOF */
+
+void
+vprint_prereqs (const struct dep *deps)
+{
+  const struct dep *ood = 0;
+
+  /* Print all normal dependencies; note any order-only deps.  */
+  for (; deps != 0; deps = deps->next)
+    if (! deps->ignore_mtime)
+      fprintf (debugfp, "%s ", dep_name (deps));
+    else if (! ood)
+      ood = deps;
+
+  /* Print order-only deps, if we have any.  */
+	// XXX(wenbin): what's this??
+  if (ood)
+    {
+      vprint (" | %s", dep_name (ood));
+      for (ood = ood->next; ood != 0; ood = ood->next)
+        if (ood->ignore_mtime)
+          fprintf (debugfp, "%s ", dep_name (ood));
+    }
+}
+
+static void
+vprint_file (const void *item)
+{
+  const struct file *f = item;
+
+  if (!f->is_target)
+		return;
+  fprintf(debugfp, "DEP---%s---", f->name);
+  vprint_prereqs (f->deps);
+	fprintf(debugfp, "\n");
+}
+
+void
+vprint_dep(void)
+{
+  hash_map (&files, vprint_file);
+	// hash_print_stats (&files, stdout);
+}

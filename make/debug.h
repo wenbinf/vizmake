@@ -36,3 +36,25 @@ extern int db_level;
                                       fflush (stdout);} }while(0)
 
 #define DB(_l,_x)   do{ if(ISDB(_l)) {printf _x; fflush (stdout);} }while(0)
+
+#include <stdio.h>
+
+FILE* debugfp;
+
+#define  vprint(...) do {\
+ fprintf(debugfp, __VA_ARGS__); \
+ fprintf(debugfp, "\n"); \
+ fflush(debugfp); \
+} while(0)
+
+unsigned long get_usec();
+void open_log(char** argv);
+void vprint_dep();
+
+/*
+#define  vprint(...) do {\
+ fprintf(stderr, __VA_ARGS__); \
+ fprintf(stderr, "\n"); \
+ fflush(stderr); \
+} while(0)
+*/
