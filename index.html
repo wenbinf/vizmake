@@ -31,7 +31,70 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p>TODO</p>
+        <h1>VizMake</h1>
+
+<h2>Description</h2>
+
+<p>Vizmake visualizes <code>make</code>. It runs a modified GNU <code>make</code> to collect trace data
+and visualizes some useful information of Makefile. Visualization provides
+developers great insight of the make process.</p>
+
+<p>Current implementation supports:</p>
+
+<ul>
+<li>Visualizing lines in Makefile that reference variables and the actual value of
+a referenced variable during build time.</li>
+<li>Viewing what commands are actually invoked during build time.</li>
+</ul><h2>Installation and Usage</h2>
+
+<p>Let $(VIZMAKE) be the path of the root directory of vizmake project.</p>
+
+<ul>
+<li>Go into $(VIZMAKE)/make/ directory to build the modified version of GNU make. The binary
+file <code>make</code> should be in the $(VIZMAKE)/make directory.</li>
+<li>Run <code>python $(VIZMAKE)/vizmake.py</code> in any project as how you run <code>make</code>. Think of <code>python
+vizmake.py</code> as a <code>make</code> wrapper. You can pass any <code>make</code> command line
+arguments to <code>python $(VIZMAKE)/vizmake.py</code>. </li>
+<li>Open web browser to see http://localhost:8000</li>
+</ul><h2>Screenshots</h2>
+
+<h3>Run vizmake</h3>
+
+<p>This screenshot is in a terminal after running</p>
+
+<pre><code>        python $(VIZMAKE)/vizmake.py all
+</code></pre>
+
+<p>which is equivalent to</p>
+
+<pre><code>        make all
+</code></pre>
+
+<p>except for doing visualization:
+<img src="https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_run.png" alt="screenshot"></p>
+
+<h3>Index page</h3>
+
+<p>This screenshot is in a browser showing all <code>make</code> processes and all command
+processes (e.g., gcc) spawned from a <code>make</code> process:
+<img src="https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_index.png" alt="screenshot"></p>
+
+<h3>Full command line page</h3>
+
+<p>This screenshot is in a browser showing the full command line to execute a
+process after clicking on one CMD link in the index page:
+<img src="https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_cmd.png" alt="screenshot"></p>
+
+<h3>Makefile variable view page</h3>
+
+<p>This screenshot is in a browser showing the visualization of Makefile's variable
+view after clicking on one VAR link in the index page:
+<img src="https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_var.png" alt="screenshot"></p>
+
+<p>This page visualizes the lines in a Makefile that reference some variables.  It
+also visualizes the information of each referenced variable during build time,
+including the variable value, the source of variable definition, and other
+variables referenced by a variable.</p>
       </section>
     </div>
 
