@@ -137,6 +137,33 @@ class MakeFile:
             string = "%s%s\n" % (string, makefile)
         return string
 
+class Rule:
+    """
+    Description:
+      Represent a rule
+    """
+    def __init__(self, target):
+        self.target = target
+        self.trg_filenm = ''
+        self.trg_lineno = ''
+        self.dependees = []
+        self.cmd = []
+        self.cmd_filenm = []
+        self.cmd_lineno = []
+
+        self.extra_dependees = []
+        self.missing_dependees = []
+
+    def update(self):
+        pass
+
+    def __str__(self):
+        string = '* RULE\n'
+        string = '%s-- Target: %s\n' % (string, self.target)
+        for i in range(len(self.cmd)):
+            string = '%s-- Cmd: %s\n' % (string, self.cmd[i])
+        return string
+
 class Process:
     """
     Description:
@@ -191,6 +218,9 @@ class Process:
         # Filename -> Line number -> Line
         self.file_line_map = dict()
 
+        # target name -> Rule list
+        self.rules = dict()
+
     def update(self):
         """
         Update attribute values in this structure
@@ -198,21 +228,50 @@ class Process:
         # Set attributes
         for filenm in self.filenm:
             with open(filenm) as f:
+                cmd_exe = False
                 for line in f:
                     line = line.rstrip()
                     elems = line.split('---')
                     if elems[0] == 'PARENT':
+                        cmd_exe = False
                         self.ppid = elems[1]
                     elif elems[0] == 'EXE':
+                        cmd_exe = False
                         self.exe = elems[2]
                     elif elems[0] == 'MAKE_EXE':
+                        cmd_exe = False
                         self.make_exe = elems[1]
+                    elif elems[0] == 'DEP':
+                        cmd_exe = False
+                        if elems[1] not in self.rules:
+                            self.rules[elems[1]] = Rule(elems[1])
+                        self.rules[elems[1]].dependees = elems[2].split(' ')
+                    elif elems[0] == 'TARGET':
+                        cmd_exe = False
+                        if elems[1] not in self.rules:
+                            self.rules[elems[1]] = Rule(elems[1])
+                        self.rules[elems[1]].trg_filenm = elems[2]
+                        self.rules[elems[1]].trg_lineno = elems[3]
+                    elif elems[0] == 'CMD-EXE':
+                        if elems[1] not in self.rules:
+                            self.rules[elems[1]] = Rule(elems[1])
+                        self.rules[elems[1]].cmd_filenm.append(elems[2])
+                        self.rules[elems[1]].cmd_lineno.append(elems[3])
+                        self.rules[elems[1]].cmd.append(elems[4])
+                        self.last_rule = self.rules[elems[1]]
+                        cmd_exe = True
                     elif len(elems) == 1:
-                        self.exe = "%s\n%s" % (self.exe, elems[0])
+                        if cmd_exe == False:
+                            self.exe = "%s\n%s" % (self.exe, elems[0])
+                        else:
+                            self.last_rule.cmd[-1] += elems[0]
                     else:
+                        cmd_exe = False
                         self.exe = ''
                         break
 
+#        for trg, rule in self.rules.iteritems():
+#            print rule
         # We only parse MAKE process
         if len(self.exe) > 0: 
             self.type = 'CMD'
