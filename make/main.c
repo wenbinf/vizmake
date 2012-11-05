@@ -3288,6 +3288,10 @@ unsigned long get_usec() {
 }
 
 void open_log(char** argv) {
+	char filenm[1024];
+	snprintf(filenm, 1024, "touch vizmake_log-%d-dep", getpid());
+	system(filenm);
+
 	char logfile[256];
 	snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
 	debugfp = fopen(logfile, "w");
@@ -3303,4 +3307,5 @@ void open_log(char** argv) {
   }
 
 	vprint("MAKE_EXE---%s", cmdline);
+
 }
