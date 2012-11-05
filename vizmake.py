@@ -229,29 +229,36 @@ class Process:
         for filenm in self.filenm:
             with open(filenm) as f:
                 cmd_exe = False
+                exe_start = False
                 for line in f:
                     line = line.rstrip()
                     elems = line.split('---')
                     if elems[0] == 'PARENT':
                         cmd_exe = False
+                        exe_start = False
                         self.ppid = elems[1]
                     elif elems[0] == 'EXE':
                         cmd_exe = False
+                        exe_start = True
                         self.exe = elems[2]
                     elif elems[0] == 'MAKE_EXE':
                         cmd_exe = False
+                        exe_start = False
                         self.make_exe = elems[1]
                     elif elems[0] == 'DEP':
                         cmd_exe = False
+                        exe_start = False
                         if elems[1] not in self.rules:
                             self.rules[elems[1]] = Rule(elems[1])
                         self.rules[elems[1]].dependees = elems[2].split(' ')
                     elif elems[0] == 'TARGET':
                         cmd_exe = False
+                        exe_start = False
                         if elems[1] not in self.rules:
                             self.rules[elems[1]] = Rule(elems[1])
-                        self.rules[elems[1]].trg_filenm = elems[2]
-                        self.rules[elems[1]].trg_lineno = elems[3]
+                        if len(elems) > 2:
+                            self.rules[elems[1]].trg_filenm = elems[2]
+                            self.rules[elems[1]].trg_lineno = elems[3]
                     elif elems[0] == 'CMD-EXE':
                         if elems[1] not in self.rules:
                             self.rules[elems[1]] = Rule(elems[1])
@@ -260,13 +267,15 @@ class Process:
                         self.rules[elems[1]].cmd.append(elems[4])
                         self.last_rule = self.rules[elems[1]]
                         cmd_exe = True
+                        exe_start = False
                     elif len(elems) == 1:
-                        if cmd_exe == False:
+                        if exe_start == True:
                             self.exe = "%s\n%s" % (self.exe, elems[0])
-                        else:
+                        elif cmd_exe == True:
                             self.last_rule.cmd[-1] += elems[0]
                     else:
                         cmd_exe = False
+                        exe_start = False
                         self.exe = ''
                         break
 
@@ -485,7 +494,7 @@ class VizMake:
                     pproc = self.proc_map[proc.ppid]
                     pproc.children.append(proc)
                 except:
-                    print "cannot find", proc.ppid
+                    print "cannot find ppid=%s, pid=%s, exe=%s" % (proc.ppid, proc.pid, proc.exe)
             else:
                 self.make_procs.append(proc)
 
