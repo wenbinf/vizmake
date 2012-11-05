@@ -1086,20 +1086,23 @@ start_job_command (struct child *child)
     argv = construct_command_argv (p, &end, child->file,
                                    child->file->cmds->lines_flags[child->command_line - 1],
                                    &child->sh_batch_file);
-		char buf[1024];
+		char buf[BSIZE];
 		buf[0] = '\0';
 		int i;
 		for (i = 0; argv[i]; i++) {
-			strncat(buf, argv[i], 1024);
-			strncat(buf, " ", 1024);
+			strncat(buf, argv[i], BSIZE);
+			strncat(buf, " ", BSIZE);
 			// snprintf(buf, 1024, "%s %s", buf, argv[i]);
 		}
-		char filenm[1024];
-		snprintf(filenm, 1024, "/tmp/vizmake_log-%d-dep", getpid());
+    
+		char filenm[BSIZE];
+		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
+
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "CMD-EXE---%s---%s/%s---%d---%s\n", child->file->name, starting_directory,
 					 child->file->cmds->fileinfo.filenm, child->file->cmds->fileinfo.lineno+child->command_line-1, buf);
 		fclose(fp);
+
 #endif
     if (end == NULL)
       child->command_ptr = NULL;
@@ -1614,9 +1617,11 @@ new_job (struct file *file)
 
       in = out = cmds->command_lines[i];
 
-      vprint("CMD---%s/%s---%lu---%s", starting_directory, 
-             cmds->fileinfo.filenm, cmds->fileinfo.lineno+i, in);
-
+      if (cmds && cmds->fileinfo.filenm && in && starting_directory) {
+        vprint("CMD---%s/%s---%lu---%s", starting_directory, 
+               cmds->fileinfo.filenm, cmds->fileinfo.lineno+i, in);
+      }
+      
       while ((ref = strchr (in, '$')) != 0)
         {
           ++ref;    /* Move past the $.  */
@@ -1827,8 +1832,8 @@ new_job (struct file *file)
     DB (DB_BASIC, (_("Invoking recipe from %s:%lu to update target `%s'.\n"),
                    cmds->fileinfo.filenm, cmds->fileinfo.lineno,
                    c->file->name));
-		char filenm[1024];
-		snprintf(filenm, 1024, "/tmp/vizmake_log-%d-dep", getpid());
+		char filenm[BSIZE];
+		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "TARGET---%s---%s/%s---%d\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
 		fclose(fp);
@@ -1836,8 +1841,8 @@ new_job (struct file *file)
   else {
     DB (DB_BASIC, (_("Invoking builtin recipe to update target `%s'.\n"),
                    c->file->name));
-		char filenm[1024];
-		snprintf(filenm, 1024, "/tmp/vizmake_log-%d-dep", getpid());
+		char filenm[BSIZE];
+		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "TARGET---%s\n", c->file->name);
 		fclose(fp);
@@ -2112,11 +2117,11 @@ exec_command (char **argv, char **envp)
 #endif
   /* Run the program.  */
 
-  char buf[1024];
+  char buf[BSIZE];
   buf[0] = '\0';
   for (i = 0; argv[i]; i++) {
-    strncat(buf, argv[i], 1024);
-    strncat(buf, " ", 1024);
+    strncat(buf, argv[i], BSIZE);
+    strncat(buf, " ", BSIZE);
     // snprintf(buf, 1024, "%s %s", buf, argv[i]);
   }
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
@@ -2216,12 +2221,12 @@ exec_command (char **argv, char **envp)
   /* Run the program.  */
   environ = envp;
 
-  char buf[1024];
+  char buf[BSIZE];
   buf[0]='\0';
   int i;
   for (i = 0; argv[i]; i++) {
-    strncat(buf, argv[i], 1024);
-    strncat(buf, " ", 1024);
+    strncat(buf, argv[i], BSIZE);
+    strncat(buf, " ", BSIZE);
     // snprintf(buf, 1024, "%s %s", buf, argv[i]);
   }
   char logfile[256];
@@ -2299,11 +2304,11 @@ exec_command (char **argv, char **envp)
           break;
 # else
 
-        char buf[1024];
+        char buf[BSIZE];
         buf[0]='\0';
         for (i = 0; argv[i]; i++) {
-          strncat(buf, argv[i], 1024);
-          strncat(buf, " ", 1024);
+          strncat(buf, argv[i], BSIZE);
+          strncat(buf, " ", BSIZE);
           // snprintf(buf, 1024, "%s %s", buf, argv[i]);
         }
         snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());

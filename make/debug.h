@@ -41,15 +41,23 @@ extern int db_level;
 
 FILE* debugfp;
 
+// fprintf(stderr, "*** %s:%d\n", __FILE__, __LINE__); \
+
 #define  vprint(...) do {\
  fprintf(debugfp, __VA_ARGS__); \
  fprintf(debugfp, "\n"); \
  fflush(debugfp); \
 } while(0)
 
+/*
+#define  vprint(...) do {                       \
+} while(0)
+*/
 unsigned long get_usec();
 void open_log(char** argv);
 void vprint_dep();
+
+#define BSIZE 10240
 
 /*
 #define  vprint(...) do {\

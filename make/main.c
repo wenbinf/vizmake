@@ -3278,7 +3278,7 @@ log_working_directory (int entering)
 
   /* Flush stdout to be sure this comes before any stderr output.  */
   fflush (stdout);
-	fclose(debugfp);
+	// fclose(debugfp);
 }
 
 unsigned long get_usec() {
@@ -3288,8 +3288,8 @@ unsigned long get_usec() {
 }
 
 void open_log(char** argv) {
-	char filenm[1024];
-	snprintf(filenm, 1024, "touch vizmake_log-%d-dep", getpid());
+	char filenm[BSIZE];
+	snprintf(filenm, BSIZE, "touch /tmp/vizmake_log-%d-dep", getpid());
 	system(filenm);
 
 	char logfile[256];
@@ -3297,12 +3297,12 @@ void open_log(char** argv) {
 	debugfp = fopen(logfile, "w");
 	vprint("PARENT---%d", getppid());
 	if (!argv) return;
-	char cmdline[1024];
+	char cmdline[BSIZE];
 	cmdline[0] = '\0';
 	int i;
 	for (i = 0; argv[i]; i++) {
-    strncat(cmdline, argv[i], 1024);
-    strncat(cmdline, " ", 1024);
+    strncat(cmdline, argv[i], BSIZE);
+    strncat(cmdline, " ", BSIZE);
     //		snprintf(cmdline, 1024, "%s %s", cmdline, argv[i]);
   }
 

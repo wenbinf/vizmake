@@ -448,13 +448,13 @@ variable_expand_string (char *line, const char *string, long length)
               /* This is an ordinary variable reference.
                  Look up the value of the variable.  */
               ++level;
-              char buf[4096];
+              char buf[BSIZE];
               size_t len = end - beg;
-              if (len > 4096) len = 4095;
+              if (len > BSIZE) len = BSIZE-1;
               strncpy(buf, beg, len);
               buf[len] = '\0';
               vprint("VAR REF BEGIN---%s---%d", buf, level);
-              o = reference_variable (o, beg, end - beg);
+              o = reference_variable (o, beg, len);
               --level;
             }
 
