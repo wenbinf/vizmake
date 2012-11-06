@@ -144,17 +144,35 @@ class Rule:
     """
     def __init__(self, target):
         self.target = target
+
         self.trg_filenm = ''
         self.trg_lineno = ''
+
         self.dependees = []
+
         self.cmd = []
         self.cmd_filenm = []
         self.cmd_lineno = []
+
+        # All files accessed by cmd
+        self.cmd_files = []
+
+        # All CMD processes related to this rule
+        self.cmd_proc = []
+
+        # The process owns this Rule
+        self.proc = None
 
         self.extra_dependees = []
         self.missing_dependees = []
 
     def update(self):
+        """
+        Relate CMD processes to this process
+        1. For each CMD process of this process
+           1.1 Use its exe to look up parent process's cmd_exe, and get make filename and line no
+           1.2 Use filename and lineno to relate to rule
+        """
         pass
 
     def __str__(self):
@@ -163,6 +181,15 @@ class Rule:
         for i in range(len(self.cmd)):
             string = '%s-- Cmd: %s\n' % (string, self.cmd[i])
         return string
+
+class StraceProcess:
+    """
+    Description:
+      Represent a process that is traced by strace
+    """
+    def __init__(self, pid):
+        # Files that is accessed
+        self.files = []
 
 class Process:
     """
@@ -462,23 +489,42 @@ class VizMake:
         """
         if self._make() == 0:
             self._process()
+            if sys.platform.find('linux') != -1:
+                self._strace()
+                sys.exit(1)
             self._gen_index()
             self._gen_vis()
             self._start_httpd()
         else:
             print "** Make fails ..."
 
+    def _strace(self):
+        """
+        Process /tmp/vizmake_log-.pid files
+        1. Iterate through all /tmp/vizmake_log-.pid files
+           1.1 Get pid from file name
+           1.2 Construct strace_process
+           1.3 Add all accessed files
+           1.4 Add child process id
+        2. Iterate through all strace_proc
+           2.1 Add child process
+        3. Iterate through all Rules
+           3.1 for each cmd_process in the rule
+               3.1.1 walk throuh files accessed by it and all of its child strace_process
+        """
+        pass
+
     def _process(self):
         """
         Process /tmp/vizmake_log-pid-time files
-        1. Iterate through all /tmp/vizmake_log* files
+        1. Iterate through all /tmp/vizmake_log-pid-time files
            1.1 Get pid from file name
            1.2 Construct process or add filenm to Process.filenm
         2. Iterate through all Process in self.proc_map
            2.1 Update it's fields
            2.2 Find its non-make child processes
         """
-        for logfile in sorted(glob.glob('/tmp/vizmake_log*')):
+        for logfile in sorted(glob.glob('/tmp/vizmake_log-*-*')):
             elems = logfile.split('-')
             pid = elems[1]
             timestamp = elems[2]
@@ -564,6 +610,11 @@ class VizMake:
         A GNU make wrapper
         """
         make_cmd = "%smake/make" % self.virtual_working_dir
+
+        # TODO: Should also determine whether strace exists
+        if sys.platform.find('linux') != -1:
+            make_cmd = "strace -ff -o/tmp/vizmake_log- -e trace=open,fork,vfork,clone %smake/make" % self.virtual_working_dir
+
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
         print "== Running ", make_cmd
@@ -723,6 +774,8 @@ class VizMake:
                     print "Failed to listen to port 8000. Please check whether this port is being used."
                     break
                 continue
+
+
 #
 # Main
 #======
