@@ -2182,7 +2182,7 @@ main (int argc, char **argv)
 						exit (WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE);
 					}
 #else
-					exec_command (nargv, environ);
+					exec_command (nargv, environ, NULL);
 #endif
 					/* NOTREACHED */
 

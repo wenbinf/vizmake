@@ -1668,7 +1668,7 @@ func_shell (char *o, char **argv, const char *funcname UNUSED)
   if (pid < 0)
     perror_with_name (error_prefix, "fork");
   else if (pid == 0)
-    child_execute_job (0, pipedes[1], command_argv, envp);
+    child_execute_job (0, pipedes[1], command_argv, envp, NULL);
   else
 # endif
 #endif

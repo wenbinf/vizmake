@@ -1326,7 +1326,7 @@ start_job_command (struct child *child)
 
       /* Never use fork()/exec() here! Use spawn() instead in exec_command() */
       child->pid = child_execute_job (child->good_stdin ? 0 : bad_stdin, 1,
-                                      argv, child->environment);
+                                      argv, child->environment, child);
 
       if (child->pid < 0)
         {
@@ -1372,7 +1372,7 @@ start_job_command (struct child *child)
 #endif
 
           child_execute_job (child->good_stdin ? 0 : bad_stdin, 1,
-                             argv, child->environment);
+                             argv, child->environment, child);
         }
       else if (child->pid < 0)
         {
@@ -2017,7 +2017,7 @@ start_waiting_jobs (void)
 /* EMX: Start a child process. This function returns the new pid.  */
 # if defined __EMX__
 int
-child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
+child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp, struct child* child)
 {
   int pid;
   /* stdin_fd == 0 means: nothing to do for stdin;
@@ -2051,7 +2051,7 @@ child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
     CLOSE_ON_EXEC (stdout_fd);
 
   /* Run the command.  */
-  pid = exec_command (argv, envp);
+  pid = exec_command (argv, envp, child);
 
 
   /* Restore stdout/stdin of the parent and close temporary FDs.  */
@@ -2081,7 +2081,7 @@ child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
    STDIN_FD and STDOUT_FD are used as the process's stdin and stdout; ENVP is
    the environment of the new program.  This function does not return.  */
 void
-child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
+child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp, struct child* child)
 {
   if (stdin_fd != 0)
     (void) dup2 (stdin_fd, 0);
@@ -2093,7 +2093,7 @@ child_execute_job (int stdin_fd, int stdout_fd, char **argv, char **envp)
     (void) close (stdout_fd);
 
   /* Run the command.  */
-  exec_command (argv, envp);
+  exec_command (argv, envp, child);
 }
 #endif /* !AMIGA && !__MSDOS__ && !VMS */
 #endif /* !WINDOWS32 */
@@ -2108,7 +2108,7 @@ int
 # else
 void
 # endif
-exec_command (char **argv, char **envp)
+exec_command (char **argv, char **envp, struct child* child)
 {
 #ifdef VMS
   /* to work around a problem with signals and execve: ignore them */
@@ -2127,7 +2127,11 @@ exec_command (char **argv, char **envp)
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
   debugfp = fopen(logfile, "w");
   vprint("PARENT---%d", getppid());
-  vprint("EXE---%d---%s", getppid(), buf);
+  if (child)
+    vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
+           child->file->cmds->fileinfo.fileno+child->command_line-1, child->file->name, buf);
+  else
+    vprint("EXE---NULL---0---NULL---%s", buf);
 	fflush(debugfp);
 	// fclose(debugfp);
 
@@ -2233,7 +2237,11 @@ exec_command (char **argv, char **envp)
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
   debugfp = fopen(logfile, "w");
   vprint("PARENT---%d", getppid());
-  vprint("EXE---%d---%s", getppid(), buf);
+  if (child)
+    vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
+           child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
+  else
+    vprint("EXE---NULL---0---NULL---%s", buf);
 	fflush(debugfp);
 	// fclose(debugfp);
 
@@ -2314,7 +2322,11 @@ exec_command (char **argv, char **envp)
         snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
         debugfp = fopen(logfile, "w");
         vprint("PARENT---%d", getppid());
-        vprint("EXE---%d---%s", getppid(), buf);
+        if (child)
+          vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
+                 child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
+        else
+          vprint("EXE---NULL---0---NULL---%s", buf);
 
 				fflush(debugfp);
 				// fclose(debugfp);

@@ -142,7 +142,7 @@ class Rule:
     Description:
       Represent a rule
     """
-    def __init__(self, target):
+    def __init__(self, target, proc):
         self.target = target
 
         self.trg_filenm = ''
@@ -161,7 +161,7 @@ class Rule:
         self.cmd_proc = []
 
         # The process owns this Rule
-        self.proc = None
+        self.proc = proc
 
         self.extra_dependees = []
         self.missing_dependees = []
@@ -170,16 +170,36 @@ class Rule:
         """
         Relate CMD processes to this process
         1. For each CMD process of this process
-           1.1 Use its exe to look up parent process's cmd_exe, and get make filename and line no
-           1.2 Use filename and lineno to relate to rule
+           1.1 Use its exe to look up this rule's cmd_exe using make filename and line no
         """
-        pass
+        for child in self.proc.children:
+            if child.type != 'CMD': continue
+            if child.target == self.target:
+                self.cmd_proc.append(child)
 
     def __str__(self):
         string = '* RULE\n'
         string = '%s-- Target: %s\n' % (string, self.target)
+        string = '%s-- Dependencies (Total:%d): [' % (string, len(self.dependees))
+        for f in self.dependees:
+            string = '%s%s ' % (string, f)
+        string += ']\n'
         for i in range(len(self.cmd)):
             string = '%s-- Cmd: %s\n' % (string, self.cmd[i])
+        for i in range(len(self.cmd_proc)):
+            string = '%s-- CmdProc: %s\n' % (string, self.cmd_proc[i].pid)
+        string = '%s-- Accessed Files (Total:%d): [' % (string, len(self.cmd_files))
+        for f in self.cmd_files:
+            string = '%s%s ' % (string, f)
+        string += ']\n'
+        string = '%s-- Extra dependencies (Total:%d): [' % (string, len(self.extra_dependees))
+        for f in self.extra_dependees:
+            string = '%s%s ' % (string, f)
+        string += ']\n'
+        string = '%s-- Missing dependencies (Total:%d): [' % (string, len(self.missing_dependees))
+        for f in self.missing_dependees:
+            string = '%s%s ' % (string, f)
+        string += ']\n'
         return string
 
 class StraceProcess:
@@ -187,9 +207,46 @@ class StraceProcess:
     Description:
       Represent a process that is traced by strace
     """
-    def __init__(self, pid):
+    def __init__(self, pid, filenm):
+        # Process id 
+        self.pid = pid
+
+        # Child pid
+        self.child_pids = []
+
+        # Trace filename
+        self.filenm = filenm
+
         # Files that is accessed
         self.files = []
+
+    def update(self):
+        with open(self.filenm) as f:
+            for line in f:
+                line = line.rstrip()
+                # Handle open
+                open_match = re.match('open\s*\(\"(.+)\",\s*(.+)\s*\)\s*=\s*(-?\d+).*', line)
+                if open_match:
+                    if open_match.group(3) != '-1':
+                        # We are only interested in files that are read
+                        if open_match.group(2).find('O_RD') != -1:
+                            self.files.append(open_match.group(1))
+                else:
+                    fork_match = re.match('(fork|vfork|clone)\s*\(.*\)\s*=\s*(\d+).*', line)
+                    if fork_match:
+                        self.child_pids.append(fork_match.group(2)) 
+
+    def __str__(self):
+        string = 'StraceProcess %s\n' % self.pid
+        string = "%s- files = [" % string
+        for filenm in self.files:
+            string = "%s %s " % (string, filenm)
+        string = "%s]\n" % string
+        string = "%s- children pid = [" % string
+        for child in self.child_pids:
+            string = "%s %s " % (string, child)
+        string = "%s]\n" % string
+        return string
 
 class Process:
     """
@@ -211,6 +268,11 @@ class Process:
 
         # The command to start cmd process
         self.exe = ''
+        # The source of this exe
+        self.cmd_filenm = ''
+        self.cmd_lineno = ''
+        # The target genereted by this process
+        self.target = ''
 
         # The command to start make process
         self.make_exe = ''
@@ -267,7 +329,10 @@ class Process:
                     elif elems[0] == 'EXE':
                         cmd_exe = False
                         exe_start = True
-                        self.exe = elems[2]
+                        self.exe = elems[4]
+                        self.target = elems[3]
+                        self.cmd_filenm = elems[1]
+                        self.cmd_lineno = elems[2]
                     elif elems[0] == 'MAKE_EXE':
                         cmd_exe = False
                         exe_start = False
@@ -276,19 +341,19 @@ class Process:
                         cmd_exe = False
                         exe_start = False
                         if elems[1] not in self.rules:
-                            self.rules[elems[1]] = Rule(elems[1])
+                            self.rules[elems[1]] = Rule(elems[1], self)
                         self.rules[elems[1]].dependees = elems[2].split(' ')
                     elif elems[0] == 'TARGET':
                         cmd_exe = False
                         exe_start = False
                         if elems[1] not in self.rules:
-                            self.rules[elems[1]] = Rule(elems[1])
+                            self.rules[elems[1]] = Rule(elems[1], self)
                         if len(elems) > 2:
                             self.rules[elems[1]].trg_filenm = elems[2]
                             self.rules[elems[1]].trg_lineno = elems[3]
                     elif elems[0] == 'CMD-EXE':
                         if elems[1] not in self.rules:
-                            self.rules[elems[1]] = Rule(elems[1])
+                            self.rules[elems[1]] = Rule(elems[1], self)
                         self.rules[elems[1]].cmd_filenm.append(elems[2])
                         self.rules[elems[1]].cmd_lineno.append(elems[3])
                         self.rules[elems[1]].cmd.append(elems[4])
@@ -299,15 +364,13 @@ class Process:
                         if exe_start == True:
                             self.exe = "%s\n%s" % (self.exe, elems[0])
                         elif cmd_exe == True:
-                            self.last_rule.cmd[-1] += elems[0]
+                            self.last_rule.cmd[-1] += ('\n%s' % elems[0])
                     else:
                         cmd_exe = False
                         exe_start = False
                         self.exe = ''
                         break
 
-#        for trg, rule in self.rules.iteritems():
-#            print rule
         # We only parse MAKE process
         if len(self.exe) > 0: 
             self.type = 'CMD'
@@ -319,7 +382,18 @@ class Process:
 
         for filenm in self.filenm:
             self._parse(filenm)
-            
+
+        # Keep rules that actually execute
+        tmp_rules = dict()
+        for trg, rule in self.rules.iteritems():
+            if len(rule.cmd) > 0:
+                tmp_rules[trg] = rule
+        self.rules = tmp_rules
+
+        # Update rules in current MAKE process    
+#        for trg, rule in self.rules.iteritems():
+#            rule.update()
+
         # Fix up command to lines
         self._fixup_commands()
 
@@ -432,7 +506,7 @@ class Process:
         string = "%s- make_exe = %s\n" % (string, self.make_exe)
         string = "%s- children = [" % string
         for child in self.children:
-            string = "%s %s " % (string, child.pid)
+            string = "%s %s(trg:%s) " % (string, child.pid, child.target)
         string = "%s]\n" % string
         string = "%s- cmds:\n" % string
         for cmd in self.cmds:
@@ -471,6 +545,9 @@ class VizMake:
         # pid => Process
         self.proc_map = dict()
 
+        # pid => StraceProcess
+        self.strace_proc_map = dict()
+
         # A list of make processes, sorted by timestamp
         self.make_procs = []
 
@@ -491,12 +568,48 @@ class VizMake:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
-                sys.exit(1)
             self._gen_index()
             self._gen_vis()
             self._start_httpd()
         else:
             print "** Make fails ..."
+
+    def _sanitize_files(self, file_list):
+        """
+        Accessed files are a lot! Let's reduce them. Here are some heuristics:
+        1. Remove duplicate files
+        2. Skip files in standard path, e.g., /tmp, /lib ...
+        """
+        black_list = ['/tmp/', '/lib/', '/usr/lib/', '/lib64/', '/etc/',
+                      '/usr/lib64/', '/include/', '/usr/include/', '/proc/', 
+                      '/dev/', '/usr/share/locale/', '/usr/local/include/',
+                      '/usr/local/lib/']
+        ret = []
+        for f in file_list:
+            to_add = True
+            for b in black_list:
+                if f.startswith(b):
+                    to_add = False
+                    break
+            if to_add: 
+                if f.startswith('./'):
+                    f = f[2:]
+                ret.append(f)
+        return set(ret)
+
+    def _get_accessed_files(self, pid):
+        """
+        Get this process's accessed files and its children's accessed files
+        """
+        ret = []
+        try:
+            sproc = self.strace_proc_map[pid]
+            ret.extend(sproc.files)
+            for child in sproc.child_pids:
+                ret.extend(self._get_accessed_files(child))
+        except:
+            pass
+        return ret
 
     def _strace(self):
         """
@@ -506,13 +619,31 @@ class VizMake:
            1.2 Construct strace_process
            1.3 Add all accessed files
            1.4 Add child process id
-        2. Iterate through all strace_proc
-           2.1 Add child process
-        3. Iterate through all Rules
-           3.1 for each cmd_process in the rule
-               3.1.1 walk throuh files accessed by it and all of its child strace_process
+        2. Iterate through all Rules
+           2.1 for each cmd_process in the rule
+               2.1.1 walk throuh files accessed by it and all of its child strace_process
+        3. Sanitize files: accessed files and dependees       
         """
-        pass
+        for logfile in sorted(glob.glob('/tmp/vizmake_log-.*')):
+            elems = logfile.split('-')
+            pid = elems[1][1:]
+            self.strace_proc_map[pid] = StraceProcess(pid, logfile)
+            self.strace_proc_map[pid].update()
+
+        for proc in self.make_procs:
+            for trg, rule in proc.rules.iteritems():
+                rule.update()
+                for cmd_proc in rule.cmd_proc:
+                    rule.cmd_files.extend(self._get_accessed_files(cmd_proc.pid))
+
+        for proc in self.make_procs:
+            for trg, rule in proc.rules.iteritems():
+                rule.dependees = self._sanitize_files(rule.dependees)
+                rule.cmd_files = self._sanitize_files(rule.cmd_files)
+                rule.cmd_files = set(rule.cmd_files) - set([rule.target])
+                rule.extra_dependees = set(rule.dependees) - set(rule.cmd_files)
+                rule.missing_dependees = set(rule.cmd_files) - set(rule.dependees)
+                print rule
 
     def _process(self):
         """
