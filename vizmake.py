@@ -845,41 +845,6 @@ class VizMake:
         string += ']},'
         return string
 
-    def vis_dep(self, proc):
-        """
-        Visualize dependency info of rules
-        """
-        name = json.dumps("PID=%s: %s (Executed Rules:%d)" % \
-                              (proc.pid, proc.make_exe, len(proc.rules)))
-        string = '{"name":%s,"type":"PROC", "children":[' % name            
-        for trg, rule in proc.rules.iteritems():
-            common_dependees = set(rule.dependees) - set(rule.extra_dependees) \
-                - set(rule.missing_dependees)
-            cmd_string = ''
-            for cmd in rule.cmd:
-                cmd_string = '%sCMD={%s} ' % (cmd_string, cmd)
-            string = '%s{"name":"Target: %s (Missing:%d, Extra:%d, Common:%d)",' \
-                '"type":"TARGET","cmd":%s, "children":[' % \
-                (string, rule.target, len(rule.missing_dependees), \
-                     len(rule.extra_dependees), len(common_dependees), \
-                     json.dumps(cmd_string))
-            for mfile in rule.missing_dependees:
-                string = '%s{"name":"Missing Dependency: %s","type":"MFILE","cmd":"","children":[]},' \
-                    % (string, mfile)
-            string = string.rstrip(',')    
-            for efile in rule.extra_dependees:
-                string = '%s{"name":"Extra Dependency: %s","type":"EFILE","cmd":"","children":[]},' \
-                    % (string, efile)
-            string = string.rstrip(',')   
-            for cfile in common_dependees:
-                string = '%s{"name":"Correct Dependency: %s","type":"CFILE","cmd":"","children":[]},'\
-                    % (string, cfile)
-            string = string.rstrip(',')    
-            string = '%s]},' % string
-        string = string.rstrip(',')    
-        string += ']},'
-        return string
-
     def _vis_dep(self, proc):
         """
         Visualize dependency info of rules
@@ -891,7 +856,7 @@ class VizMake:
             common_dependees = set(rule.dependees) - set(rule.extra_dependees) \
                 - set(rule.missing_dependees)
             cmd_string = "Line %s AT %s" % (rule.trg_lineno, rule.trg_filenm)
-            string = '%s{"name":"Target: %s (Missing:%d, Extra:%d, Common:%d)",' \
+            string = '%s{"name":"Target: %s (Missing:%d, Extra:%d, Correct:%d)",' \
                 '"type":"TARGET","cmd":%s, "children":[' % \
                 (string, rule.target, len(rule.missing_dependees), \
                      len(rule.extra_dependees), len(common_dependees), \
