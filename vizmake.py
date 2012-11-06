@@ -379,6 +379,7 @@ class Process:
         else:
             self.var_url = "make/var/%s" % self.pid
             self.cmd_url = "make/cmd/%s" % self.pid
+            self.dep_url = "make/dep/%s" % self.pid
 
         for filenm in self.filenm:
             self._parse(filenm)
@@ -579,6 +580,8 @@ class VizMake:
         Accessed files are a lot! Let's reduce them. Here are some heuristics:
         1. Remove duplicate files
         2. Skip files in standard path, e.g., /tmp, /lib ...
+        3. Skip empty name file, e.g., with all empty space / newline
+        4. Skip basename . or ..
         """
         black_list = ['/tmp/', '/lib/', '/usr/lib/', '/lib64/', '/etc/',
                       '/usr/lib64/', '/include/', '/usr/include/', '/proc/', 
@@ -587,6 +590,11 @@ class VizMake:
         ret = []
         for f in file_list:
             to_add = True
+            # Skip empty name
+            f = f.lstrip().rstrip()
+            if len(f) == 0: continue
+            if os.path.basename(f) == '.' or os.path.basename(f) == '..': continue
+            # Remove predefined things
             for b in black_list:
                 if f.startswith(b):
                     to_add = False
@@ -694,8 +702,9 @@ class VizMake:
         else:
             proc_str = 'MAKE %s: %s' % (proc_str, proc.root_makefile.filenm)
             proc_str = '%s (<a href="%s.html" target="_blank">CMD</a> | '\
-                '<a href="%s.html" target="_blank">VAR</a>)' % \
-                (proc_str, proc.cmd_url, proc.var_url)
+                '<a href="%s.html" target="_blank">VAR</a> | '  \
+                '<a href="%s.html" target="_blank">DEP</a>)' % \
+                (proc_str, proc.cmd_url, proc.var_url, proc.dep_url)
 
         string += proc_str
         if len(proc.children) > 0:
@@ -733,6 +742,7 @@ class VizMake:
         os.system('rm -rf %s/vizengine/make/*' % self.virtual_working_dir)
         os.system('mkdir -p %s/vizengine/make/cmd' % self.virtual_working_dir)
         os.system('mkdir -p %s/vizengine/make/var' % self.virtual_working_dir)
+        os.system('mkdir -p %s/vizengine/make/dep' % self.virtual_working_dir)
         for pid, proc in self.proc_map.iteritems():
             self._visualize(proc)
 
@@ -839,7 +849,7 @@ class VizMake:
         """
         Produce web pages a specified process `proc`
 
-        In fact there are two types of pages
+        In fact there are three types of pages
         1. Page about command, which is in essense the full text of command executed
         2. Page about makefile variables, which has such json format
           JSON format:
@@ -848,6 +858,16 @@ class VizMake:
           "type": "xxx",    // The type of each bar (FILE, LINE, VAR, INCS, LINES)
           "full": "xxx",    // Full content for LINE or VAR
           "tooltip": "XXX", // Need tool tip? possible values: YES / NO
+          "children":[]     // Children
+          }
+        3. Page about dependencies, use different color in file bar
+           1. green: common
+           2. yellow: extra
+           3. red: missing
+          JSON format:
+          {
+          "name": "xxx",    // The text to display on each bar -- TARGET: xxxx (x deps, x files, x missing..)
+          "type": "xxx",    // The type of each bar (TARGET, FILE)
           "children":[]     // Children
           }
         """
@@ -868,7 +888,7 @@ class VizMake:
             string = self._vis_file(proc.root_makefile)
             string = string.rstrip(',')
             f.write(string)
-        cmd = 'cp %s/indented_tree/index.html %s/%s.html' % \
+        cmd = 'cp %s/tmpl/var.html %s/%s.html' % \
                       (base_path, base_path, proc.var_url)
         os.system(cmd)
         string = ''
@@ -878,6 +898,12 @@ class VizMake:
         with open('%s/%s.html' % (base_path, proc.var_url), 'w') as f:
             f.write(string)
 
+        # Handle DEP page
+        # TODO    
+        if sys.platform.find('linux') != -1:
+            with open('%s/%s.html' % (base_path, proc.dep_url), 'w') as f:
+                f.write(string)
+            
     def _start_httpd(self):
         """
         Set up a simple web server for visualization
