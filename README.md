@@ -9,11 +9,10 @@ developers great insight of the make process.
 
 Current implementation supports:
 
-* Visualizing lines in Makefile that reference variables and the actual value of
-  a referenced variable during build time.
 * Viewing what commands are actually invoked during build time.
-
-I've tested vizmake on Mac OS X and Red Hat Linux Enterprise 6.
+* Visualizing lines in Makefile that reference variables and the actual value of
+  a referenced variable during build time. [Mac OS X and Linux]
+* Analyzing and visualizing dependencies in rules to help figure out what dependencies are potentially missed or are potentially extra. [Linux (rely on strace)]
 
 ## Installation and Usage
 
@@ -63,3 +62,8 @@ also visualizes the information of each referenced variable during build time,
 including the variable value, the source of variable definition, and other
 variables referenced by a variable.
 
+### Makefile dependency view page
+
+This screenshot is in a browser showing the visualization of dependencies in rules
+view after clicking on one DEP link in the index page:
+![screenshot](https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_dep.png)
