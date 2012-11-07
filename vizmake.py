@@ -781,21 +781,29 @@ class VizMake:
             tooltip = "YES"
         tooltip = json.dumps(tooltip)
         name = '$(%s)="%s" ' % (var.name, value)
+        var_type = ''
         if var.type == 'FILE':
             name += ('from %s:%s' % (var.filenm, var.lineno))
+            var_type = 'FILE'
         elif var.type == 'COMMAND':
             name += 'from command line'
+            var_type = 'COMMAND'
         elif var.type == 'UNDEFINED':
             name += 'that is undefined'
+            var_type = 'UNDEFINED'
         elif var.type == 'AUTOMATIC':
             name += 'that is an automatic variable'
+            var_type = 'AUTOMATIC'
         elif var.type == 'DEFAULT':
             name += 'that is an default variable'
+            var_type = 'DEFAULT'
         elif var.type == 'ENV':
             name += 'from environment variable'
+            var_type = 'ENV'
         name = json.dumps(name)
-        string = '%s"name":%s,"full":%s,"type":"VAR","tooltip":%s,"children":[' % \
-                 (string, name, json.dumps(var.expanded_value), tooltip)
+        var_type = json.dumps(var_type)
+        string = '%s"name":%s,"full":%s,"type":"VAR","var_type":%s, "tooltip":%s,"children":[' % \
+                 (string, name, json.dumps(var.expanded_value), var_type, tooltip)
         for var in var.var_refs:
             string += self._vis_var(var)
         string = string.rstrip(',')
@@ -916,6 +924,7 @@ class VizMake:
           "name": "xxx",    // The text to display on each bar
           "type": "xxx",    // The type of each bar (FILE, LINE, VAR, INCS, LINES)
           "full": "xxx",    // Full content for LINE or VAR
+          "var_type": "x",  // if "type"=VAR, variable type is set
           "tooltip": "XXX", // Need tool tip? possible values: YES / NO
           "children":[]     // Children
           }
