@@ -391,10 +391,6 @@ class Process:
                 tmp_rules[trg] = rule
         self.rules = tmp_rules
 
-        # Update rules in current MAKE process    
-#        for trg, rule in self.rules.iteritems():
-#            rule.update()
-
         # Fix up command to lines
         self._fixup_commands()
 
@@ -565,8 +561,8 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-#        if self._make() == 0:
-        if True:
+        if self._make() == 0:
+#        if True:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
@@ -762,7 +758,8 @@ class VizMake:
 
         # TODO: Should also determine whether strace exists
         if sys.platform.find('linux') != -1:
-            make_cmd = "strace -ff -o/tmp/vizmake_log- -e trace=open,fork,vfork,clone %smake/make" % self.virtual_working_dir
+            make_cmd = 'strace -ff -o/tmp/vizmake_log- -e trace=open,'\
+                'fork,vfork,clone %smake/make' % self.virtual_working_dir
 
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
@@ -885,6 +882,26 @@ class VizMake:
         string += ']},'
         return string
 
+    def _vis_page(self, proc, url, vis_type, func, *args):
+        """
+        Generate a type of visualization pages
+        """
+        base_path = '%svizengine' % self.virtual_working_dir
+        with open("%s/%s.json" % \
+                      (base_path, url), "w") as f:
+            string = func(*args)
+            string = string.rstrip(',')
+            f.write(string)
+        cmd = 'cp %s/tmpl/%s.html %s/%s.html' % \
+            (base_path, vis_type, base_path, url)
+        os.system(cmd)
+        string = ''
+        with open('%s/%s.html' % (base_path, url), 'r') as f:
+            string = f.read()
+            string = string.replace('$$PID_VALUE$$', proc.pid)
+        with open('%s/%s.html' % (base_path, url), 'w') as f:
+            f.write(string)
+
     def _visualize(self, proc):
         """
         Produce web pages a specified process `proc`
@@ -924,36 +941,11 @@ class VizMake:
 
         # Handle VAR page
         print "== Visualizing %s" % proc.root_makefile.filenm
-        with open("%s/%s.json" % \
-                      (base_path, proc.var_url), "w") as f:
-            string = self._vis_file(proc.root_makefile)
-            string = string.rstrip(',')
-            f.write(string)
-        cmd = 'cp %s/tmpl/var.html %s/%s.html' % \
-                      (base_path, base_path, proc.var_url)
-        os.system(cmd)
-        string = ''
-        with open('%s/%s.html' % (base_path, proc.var_url), 'r') as f:
-            string = f.read()
-            string = string.replace('$$PID_VALUE$$', proc.pid)
-        with open('%s/%s.html' % (base_path, proc.var_url), 'w') as f:
-            f.write(string)
+        self._vis_page(proc, proc.var_url, 'var', self._vis_file, proc.root_makefile)
 
         # Handle DEP page
         if sys.platform.find('linux') != -1:
-            with open("%s/%s.json" % \
-                          (base_path, proc.dep_url), "w") as f:
-                string = self._vis_dep(proc)
-                string = string.rstrip(',')
-                f.write(string)
-            cmd = 'cp %s/tmpl/dep.html %s/%s.html' % \
-                (base_path, base_path, proc.dep_url)
-            os.system(cmd)
-            with open('%s/%s.html' % (base_path, proc.dep_url), 'r') as f:
-                string = f.read()
-                string = string.replace('$$PID_VALUE$$', proc.pid)
-            with open('%s/%s.html' % (base_path, proc.dep_url), 'w') as f:
-                f.write(string)
+            self._vis_page(proc, proc.dep_url, 'dep', self._vis_dep, proc)
             
     def _start_httpd(self):
         """
