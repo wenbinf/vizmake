@@ -565,7 +565,8 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-        if self._make() == 0:
+#        if self._make() == 0:
+        if True:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
@@ -583,26 +584,33 @@ class VizMake:
         3. Skip empty name file, e.g., with all empty space / newline
         4. Skip basename . or ..
         """
-        black_list = ['/tmp/', '/lib/', '/usr/lib/', '/lib64/', '/etc/',
-                      '/usr/lib64/', '/include/', '/usr/include/', '/proc/', 
-                      '/dev/', '/usr/share/locale/', '/usr/local/include/',
-                      '/usr/local/lib/']
+        prefix_black_list = ['/tmp/', '/lib/', '/usr/lib/', '/lib64/', '/etc/',
+                             '/usr/lib64/', '/include/', '/usr/include/', '/proc/', 
+                             '/dev/', '/usr/share/locale/', '/usr/local/include/',
+                             '/usr/local/lib/']
+        suffix_black_list = ['/', '.', '..']
         ret = []
         for f in file_list:
             to_add = True
             # Skip empty name
             f = f.lstrip().rstrip()
             if len(f) == 0: continue
-            if os.path.basename(f) == '.' or os.path.basename(f) == '..': continue
-            # Remove predefined things
-            for b in black_list:
+            # Check prefix
+            for b in prefix_black_list:
                 if f.startswith(b):
                     to_add = False
                     break
-            if to_add: 
-                if f.startswith('./'):
-                    f = f[2:]
-                ret.append(f)
+            if not to_add: continue    
+            # Check suffix
+            for b in suffix_black_list:
+                if f.endswith(b):
+                    to_add = False
+                    break
+            if not to_add: continue
+            # Normalize
+            if f.startswith('./'):
+                f = f[2:]
+            ret.append(f)
         return set(ret)
 
     def _get_accessed_files(self, pid):

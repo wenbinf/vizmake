@@ -37,32 +37,31 @@ extern int db_level;
 
 #define DB(_l,_x)   do{ if(ISDB(_l)) {printf _x; fflush (stdout);} }while(0)
 
+/* Vizmake: things to support our vizmake
+ */
 #include <stdio.h>
 
+// Log file support utilities
 FILE* debugfp;
-
-// fprintf(stderr, "*** %s:%d\n", __FILE__, __LINE__); \
-
 #define  vprint(...) do {\
  fprintf(debugfp, __VA_ARGS__); \
  fprintf(debugfp, "\n"); \
  fflush(debugfp); \
 } while(0)
 
-/*
-#define  vprint(...) do {                       \
-} while(0)
-*/
+// Get current timestamp in microseconds, used in filenames
+// Defined in main.c
 unsigned long get_usec();
+
+// Open log files
+// Defined in main.c
 void open_log(char** argv);
+
+// Print out dependencies for rules
 void vprint_dep();
 
+// Simple buffer management
+// For large buffer
 #define BSIZE 10240
-
-/*
-#define  vprint(...) do {\
- fprintf(stderr, __VA_ARGS__); \
- fprintf(stderr, "\n"); \
- fflush(stderr); \
-} while(0)
-*/
+// For small buffer
+#define SSIZE 256

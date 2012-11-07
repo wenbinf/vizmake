@@ -164,14 +164,21 @@ recursively_expand_for_file (struct variable *v, struct file *file)
 __inline
 #endif
 
+// Vizmake
 void vprint_var(struct variable* v, char* value) {
   if (!v) return;
 
   switch (v->origin) {
   case o_default:
+    // Trace: VAR REF END, end of a default variable
+    // Format: VAR REF END---DEFAULT---variable name---variable value (may
+    //         contain other variable reference---expanded value
     vprint("VAR REF END---DEFAULT---%s---%s---%s", v->name, v->value, value);
     break;
   case o_env:
+    // Trace: VAR REF END, end of a environment variable
+    // Format: VAR REF END---ENV---variable name---variable value (may
+    //         contain other variable reference---expanded value
     vprint("VAR REF END---ENV---%s---%s---%s", v->name, v->value, value);
     break;
   case o_file:
@@ -179,6 +186,10 @@ void vprint_var(struct variable* v, char* value) {
       vprint("VAR REF END---ENV---%s---%s---%s", v->name, v->value, value);
       break;
     }
+    // Trace: VAR REF END, end of a file variable
+    // Format: VAR REF END---FILE---variable name---variable value (may
+    //         contain other variable reference---Makefile path---line number
+    //         in that Makefile---expanded value
     vprint("VAR REF END---FILE---%s---%s---%s---%lu---%s",
            v->name, v->value, v->fileinfo.filenm, v->fileinfo.lineno, value);
     break;
@@ -186,13 +197,17 @@ void vprint_var(struct variable* v, char* value) {
     assert(0 && "env override");
     break;
   case o_command:
+    // Trace: VAR REF END, end of a command line variable
+    // Format: VAR REF END---CMD---variable name---variable value (may
+    //         contain other variable reference---expanded value
     vprint("VAR REF END---CMD---%s---%s---%s", v->name, v->value, value);
     break;
   case o_override:
     assert(0 && "override");
     break;
   case o_automatic:
-    vprint("VAR REF END---AUTO---%s---%s---%s", v->name, v->value, value);
+    // XXX: Don't handle automatic variable for now
+    // vprint("VAR REF END---AUTO---%s---%s---%s", v->name, v->value, value);
     break;
   case o_invalid:
     assert(0 && "invalid");
@@ -216,9 +231,11 @@ reference_variable (char *o, const char *name, unsigned int length)
 
   /* If there's no variable by that name or it has no value, stop now.  */
   if (v == 0 || (*v->value == '\0' && !v->append)) {
+
+    // Vizmake
     if (!v) {
-      char buf[4096];
-      if (length > 4096) length = 4095;
+      char buf[BSIZE];
+      if (length > BSIZE) length = BSIZE - 1;
       strncpy(buf, name, length);
       buf[length] = '\0';
       vprint("VAR REF END---UNDEFINED---%s", buf);

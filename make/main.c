@@ -918,6 +918,8 @@ main (int argc, char **argv)
 	main (int argc, char **argv, char **envp)
 #endif
 {
+  /* Vizmake
+   */
 	open_log(argv);
 
   static char *stdin_nm = 0;
@@ -3197,6 +3199,8 @@ die (int status)
 
       if (print_data_base_flag)
 				print_data_base ();
+
+      // Vizmake
 			open_log(NULL);
 			vprint_dep();
 
@@ -3281,6 +3285,8 @@ log_working_directory (int entering)
 	// fclose(debugfp);
 }
 
+/* Vizmake
+ */
 unsigned long get_usec() {
 	struct timeval tv;
 	int ret = gettimeofday(&tv, NULL);
@@ -3288,24 +3294,32 @@ unsigned long get_usec() {
 }
 
 void open_log(char** argv) {
-	char filenm[BSIZE];
-	snprintf(filenm, BSIZE, "touch /tmp/vizmake_log-%d-dep", getpid());
+  // Open the file dedicated to record dependencies
+  // Filename format: vizmake_log-pid-dep
+	char filenm[SSIZE];
+	snprintf(filenm, SSIZE, "touch /tmp/vizmake_log-%d-dep", getpid());
 	system(filenm);
 
-	char logfile[256];
-	snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+  // Open the major file
+  // Filename format: vizmake_log-pid-timestamp
+	char logfile[SSIZE];
+	snprintf(logfile, SSIZE, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
 	debugfp = fopen(logfile, "w");
+
+  // Trace: PARENT, the parent process pid
+  // Format: PARENT---ppid
 	vprint("PARENT---%d", getppid());
-	if (!argv) return;
+
+  // Trace: MAKE_EXE, the command line to execute this make
+  // Format: MAKE_EXE---command line (with full arguments)
+  if (!argv) return;
 	char cmdline[BSIZE];
 	cmdline[0] = '\0';
 	int i;
 	for (i = 0; argv[i]; i++) {
+    if (strlen(argv[i]) + strlen(cmdline) > BSIZE) break;
     strncat(cmdline, argv[i], BSIZE);
     strncat(cmdline, " ", BSIZE);
-    //		snprintf(cmdline, 1024, "%s %s", cmdline, argv[i]);
   }
-
 	vprint("MAKE_EXE---%s", cmdline);
-
 }

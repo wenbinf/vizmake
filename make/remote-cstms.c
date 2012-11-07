@@ -224,7 +224,7 @@ start_remote_job (char **argv, char **envp, int stdin_fd,
   fflush (stderr);
 
   pid = vfork ();
-	vprint("CHILD---%d", child->pid);
+
   if (pid < 0)
     {
       /* The fork failed!  */

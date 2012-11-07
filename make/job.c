@@ -1618,6 +1618,8 @@ new_job (struct file *file)
       in = out = cmds->command_lines[i];
 
       if (cmds && cmds->fileinfo.filenm && in && starting_directory) {
+        // Trace: CMD, the command for a rule
+        // Format: CMD---filename---lineno---cmd content
         vprint("CMD---%s/%s---%lu---%s", starting_directory, 
                cmds->fileinfo.filenm, cmds->fileinfo.lineno+i, in);
       }
@@ -2120,9 +2122,9 @@ exec_command (char **argv, char **envp, struct child* child)
   char buf[BSIZE];
   buf[0] = '\0';
   for (i = 0; argv[i]; i++) {
+    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
     strncat(buf, argv[i], BSIZE);
     strncat(buf, " ", BSIZE);
-    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
   }
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
   debugfp = fopen(logfile, "w");
@@ -2229,6 +2231,7 @@ exec_command (char **argv, char **envp, struct child* child)
   buf[0]='\0';
   int i;
   for (i = 0; argv[i]; i++) {
+    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
     strncat(buf, argv[i], BSIZE);
     strncat(buf, " ", BSIZE);
     // snprintf(buf, 1024, "%s %s", buf, argv[i]);
@@ -2315,9 +2318,9 @@ exec_command (char **argv, char **envp, struct child* child)
         char buf[BSIZE];
         buf[0]='\0';
         for (i = 0; argv[i]; i++) {
+          if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
           strncat(buf, argv[i], BSIZE);
           strncat(buf, " ", BSIZE);
-          // snprintf(buf, 1024, "%s %s", buf, argv[i]);
         }
         snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
         debugfp = fopen(logfile, "w");
