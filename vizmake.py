@@ -561,8 +561,8 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-        if self._make() == 0:
-#        if True:
+#        if self._make() == 0:
+        if True:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
@@ -860,7 +860,9 @@ class VizMake:
         for trg, rule in proc.rules.iteritems():
             common_dependees = set(rule.dependees) - set(rule.extra_dependees) \
                 - set(rule.missing_dependees)
-            cmd_string = "Line %s AT %s" % (rule.trg_lineno, rule.trg_filenm)
+            cmd_string = "Line %s in %s\n" % (rule.trg_lineno, rule.trg_filenm)
+            for cmd in rule.cmd:
+                cmd_string += ('CMD: %s\n' % cmd)
             string = '%s{"name":"Target: %s (Missing:%d, Extra:%d, Correct:%d)",' \
                 '"type":"TARGET","cmd":%s, "children":[' % \
                 (string, rule.target, len(rule.missing_dependees), \

@@ -190,10 +190,14 @@
 			function mousemove(d) {
 			if (d.type == "TARGET") {
 			var string = "";
-			string += d.cmd;
-			div.text(string)
+			var elems = d.cmd.split("\n");
+			div.text(elems[0])
 			.style("left", (d3.event.pageX ) + "px")
 			.style("top", (d3.event.pageY) + "px");
+			for (var i = 1; i < elems.length; i++ ) {
+				div.append('p')
+				   .text(elems[i]);
+			}
 			}
 			}
 
