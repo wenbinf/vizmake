@@ -156,6 +156,9 @@ class Rule:
 
         # All files accessed by cmd
         self.cmd_files = []
+        # Files that are generated in this rule
+        self.output_files = []
+        self.exe_files = []
 
         # All CMD processes related to this rule
         self.cmd_proc = []
@@ -192,6 +195,10 @@ class Rule:
         for f in self.cmd_files:
             string = '%s%s ' % (string, f)
         string += ']\n'
+        string = '%s-- Output Files (Total:%d): [' % (string, len(self.output_files))
+        for f in self.output_files:
+            string = '%s%s ' % (string, f)
+        string += ']\n'
         string = '%s-- Extra dependencies (Total:%d): [' % (string, len(self.extra_dependees))
         for f in self.extra_dependees:
             string = '%s%s ' % (string, f)
@@ -220,6 +227,12 @@ class StraceProcess:
         # Files that is accessed
         self.files = []
 
+        # Files that are created
+        self.output_files = []
+
+        # Files that are executed
+        self.exe_files = []
+
     def update(self):
         with open(self.filenm) as f:
             for line in f:
@@ -231,10 +244,18 @@ class StraceProcess:
                         # We are only interested in files that are read
                         if open_match.group(2).find('O_RD') != -1:
                             self.files.append(open_match.group(1))
-                else:
-                    fork_match = re.match('(fork|vfork|clone)\s*\(.*\)\s*=\s*(\d+).*', line)
-                    if fork_match:
-                        self.child_pids.append(fork_match.group(2)) 
+                        if open_match.group(2).find('O_CREAT') != -1:
+                            self.output_files.append(open_match.group(1))
+                    continue
+                fork_match = re.match('(fork|vfork|clone)\s*\(.*\)\s*=\s*(\d+).*', line)
+                if fork_match:
+                    self.child_pids.append(fork_match.group(2)) 
+                    continue
+                exec_match = re.match('execve\s*\(\"(.+)\"\s*,.*\).+', line)
+                if exec_match:
+                    self.exe_files.append(os.path.basename(exec_match.group(1).split('"')[0]))
+                    continue
+
 
     def __str__(self):
         string = 'StraceProcess %s\n' % self.pid
@@ -623,6 +644,48 @@ class VizMake:
             pass
         return ret
 
+    def _get_output_files(self, pid):
+        """
+        Get this process's output files and its children's output files
+        """
+        ret = []
+        try:
+            sproc = self.strace_proc_map[pid]
+            ret.extend(sproc.output_files)
+            for child in sproc.child_pids:
+                ret.extend(self._get_output_files(child))
+        except:
+            pass
+        return ret
+
+    def _get_exe_files(self, pid):
+        """
+        Get this process's output files and its children's output files
+        """
+        ret = []
+        try:
+            sproc = self.strace_proc_map[pid]
+            ret.extend(sproc.exe_files)
+            for child in sproc.child_pids:
+                ret.extend(self._get_exe_files(child))
+        except:
+            pass
+        return ret
+
+    def _all_dependees(self, rule):
+        """
+        Get this rule's dependees and its children's dependees and output_files
+        """
+        ret = []
+        ret.extend(rule.dependees)
+        for pid, p in self.proc_map.iteritems():
+            if p.type != 'MAKE': continue
+            for d in rule.dependees:
+                if d in p.rules:
+                    ret.extend(p.rules[d].dependees)
+                    ret.extend(p.rules[d].output_files)
+        return ret
+
     def _strace(self):
         """
         Process /tmp/vizmake_log-.pid files
@@ -647,14 +710,34 @@ class VizMake:
                 rule.update()
                 for cmd_proc in rule.cmd_proc:
                     rule.cmd_files.extend(self._get_accessed_files(cmd_proc.pid))
+                    rule.output_files.extend(self._get_output_files(cmd_proc.pid))
+                    rule.exe_files.extend(self._get_exe_files(cmd_proc.pid))
+                # Remove intermediate files
+                rule.cmd_files = set(rule.cmd_files) - set(rule.output_files)
 
         for proc in self.make_procs:
             for trg, rule in proc.rules.iteritems():
                 rule.dependees = self._sanitize_files(rule.dependees)
                 rule.cmd_files = self._sanitize_files(rule.cmd_files)
+                rule.output_files = self._sanitize_files(rule.output_files)
                 rule.cmd_files = set(rule.cmd_files) - set([rule.target])
                 rule.extra_dependees = set(rule.dependees) - set(rule.cmd_files)
                 rule.missing_dependees = set(rule.cmd_files) - set(rule.dependees)
+
+                # Get rid of executable files from extra dependee list
+                new_extra_dependees = []
+                for md in rule.extra_dependees:
+                    if os.path.basename(md) not in rule.exe_files:
+                        new_extra_dependees.append(md)
+                rule.extra_dependees = new_extra_dependees
+
+                # Get rid of intermediate files from missing dependee list
+                all_deps = self._all_dependees(rule)
+                new_missing_dependees = []
+                for md in rule.missing_dependees:
+                    if md not in all_deps:
+                        new_missing_dependees.append(md)
+                rule.missing_dependees = new_missing_dependees
                 print rule
 
     def _process(self):
@@ -759,7 +842,7 @@ class VizMake:
         # TODO: Should also determine whether strace exists
         if sys.platform.find('linux') != -1:
             make_cmd = 'strace -ff -o/tmp/vizmake_log- -e trace=open,'\
-                'fork,vfork,clone %smake/make' % self.virtual_working_dir
+                'process %smake/make' % self.virtual_working_dir
 
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
@@ -869,8 +952,8 @@ class VizMake:
             common_dependees = set(rule.dependees) - set(rule.extra_dependees) \
                 - set(rule.missing_dependees)
             cmd_string = "Line %s in %s\n" % (rule.trg_lineno, rule.trg_filenm)
-            for cmd in rule.cmd:
-                cmd_string += ('CMD: %s\n' % cmd)
+            for cproc in rule.cmd_proc:
+                cmd_string += ('CMD(PID=%s): %s\n' % (cproc.pid, cproc.exe))
             string = '%s{"name":"Target: %s (Missing:%d, Extra:%d, Correct:%d)",' \
                 '"type":"TARGET","cmd":%s, "children":[' % \
                 (string, rule.target, len(rule.missing_dependees), \
