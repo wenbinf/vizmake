@@ -67,3 +67,7 @@ variables referenced by a variable.
 This screenshot is in a browser showing the visualization of dependencies in rules
 view after clicking on one DEP link in the index page:
 ![screenshot](https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_dep.png)
+
+### Demo
+
+http://wenbinf.github.com/vizmake/demo
