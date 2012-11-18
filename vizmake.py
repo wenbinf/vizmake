@@ -549,6 +549,7 @@ import signal
 import SimpleHTTPServer
 import SocketServer
 import time
+import socket
 
 #
 # The core class of vizmake
@@ -572,6 +573,9 @@ class VizMake:
         self.virtual_working_dir = sys.argv[0][:-10]
         if len(self.virtual_working_dir) == 0:
             self.virtual_working_dir = './'
+
+        # How many nodes in the indented tree?
+        self.num_nodes = 0
 
     def run(self):
         """
@@ -887,6 +891,8 @@ class VizMake:
         var_type = json.dumps(var_type)
         string = '%s"name":%s,"full":%s,"type":"VAR","var_type":%s, "tooltip":%s,"children":[' % \
                  (string, name, json.dumps(var.expanded_value), var_type, tooltip)
+        self.num_nodes += 1
+
         for var in var.var_refs:
             string += self._vis_var(var)
         string = string.rstrip(',')
@@ -909,6 +915,7 @@ class VizMake:
         name = json.dumps(name)
         string = '%s"name":%s,"full":%s,"type":"LINE","tooltip":%s,"children":[' % \
                  (string, name, json.dumps(line.content), tooltip)
+        self.num_nodes += 1
 
         for var in line.var_refs:
             string += self._vis_var(var)
@@ -923,9 +930,13 @@ class VizMake:
         string = '{'
         string = '%s"name":"%s","full":"","type":"FILE","children":[' % \
                  (string, makefile.filenm)
+        self.num_nodes += 1
+
         string += '{'
         string = '%s"name":"INCLUDE FILES: %d in total","tooltip":"NO","type":"INC","children":[' % \
             (string, len(makefile.inc_files))
+        self.num_nodes += 1
+
         for inc_file in makefile.inc_files:
             string += self._vis_file(inc_file)
         string = string.rstrip(',')
@@ -933,6 +944,8 @@ class VizMake:
         string += '{'
         string = '%s"name":"LINES referencing variables: %d in total", "type":"LINES","children":[' % \
             (string, len([x for x in makefile.lines if len(x.var_refs) != 0]))
+        self.num_nodes += 1
+
         for line in makefile.lines:
             if len(line.var_refs) == 0: continue
             string += self._vis_line(line)
@@ -948,6 +961,8 @@ class VizMake:
         name = json.dumps("PID=%s: %s (Executed Rules:%d)" % \
                               (proc.pid, proc.make_exe, len(proc.rules)))
         string = '{"name":%s,"type":"PROC", "children":[' % name            
+        self.num_nodes += 1
+
         for trg, rule in proc.rules.iteritems():
             common_dependees = set(rule.dependees) - set(rule.extra_dependees) \
                 - set(rule.missing_dependees)
@@ -959,16 +974,24 @@ class VizMake:
                 (string, rule.target, len(rule.missing_dependees), \
                      len(rule.extra_dependees), len(common_dependees), \
                      json.dumps(cmd_string))
+            self.num_nodes += 1
+
             for mfile in rule.missing_dependees:
                 string = '%s{"name":"Missing Dependency: %s","type":"MFILE","cmd":"","children":[]},' \
                     % (string, mfile)
+                self.num_nodes += 1
+
             for efile in rule.extra_dependees:
                 string = '%s{"name":"Extra Dependency: %s","type":"EFILE","cmd":"","children":[]},' \
                     % (string, efile)
+                self.num_nodes += 1
+
             for cfile in common_dependees:
                 name = json.dumps("Correct Dependency: %s" % cfile)
                 string = '%s{"name":%s,"type":"CFILE","cmd":"","children":[]},'\
                     % (string, name)
+                self.num_nodes += 1
+
             string = string.rstrip(',')    
             string = '%s]},' % string
         string = string.rstrip(',')    
@@ -992,6 +1015,8 @@ class VizMake:
         with open('%s/%s.html' % (base_path, url), 'r') as f:
             string = f.read()
             string = string.replace('$$PID_VALUE$$', proc.pid)
+            string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 21))
+
         with open('%s/%s.html' % (base_path, url), 'w') as f:
             f.write(string)
 
@@ -1035,10 +1060,12 @@ class VizMake:
 
         # Handle VAR page
         print "== Visualizing %s" % proc.root_makefile.filenm
+        self.num_nodes = 0
         self._vis_page(proc, proc.var_url, 'var', self._vis_file, proc.root_makefile)
 
         # Handle DEP page
         if sys.platform.find('linux') != -1:
+            self.num_nodes = 0
             self._vis_page(proc, proc.dep_url, 'dep', self._vis_dep, proc)
             
     def _start_httpd(self):
@@ -1048,12 +1075,14 @@ class VizMake:
         os.chdir("%svizengine" % self.virtual_working_dir)
         httpd = None
         print "Starting web server for visualization ..."
+        port = 8000
+        ip = socket.gethostbyname(socket.gethostname())
         while True:
             try:
                 Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-                httpd = SocketServer.TCPServer(("", 8000), Handler)
+                httpd = SocketServer.TCPServer(("", port), Handler)
                 print "Please visit this URL in your web browser:"
-                print "    http://localhost:8000"
+                print "    http://%s:%d" % (ip, port)
                 print "    (Press ctrl+c to exit)"
                 httpd.serve_forever()
             except KeyboardInterrupt:
@@ -1061,12 +1090,8 @@ class VizMake:
                 print "Exit visualization"
                 break
             except:
-                print "Failed to listen to port 8000, wait 5 seconds ..."
-                try:
-                    time.sleep(5)
-                except KeyboardInterrupt:
-                    print "Failed to listen to port 8000. Please check whether this port is being used."
-                    break
+                print "Failed to listen to port %d, try port %d ..." % (port, port+1)
+                port += 1
                 continue
 
 
