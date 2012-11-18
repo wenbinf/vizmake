@@ -462,7 +462,9 @@ class Process:
 
                 elif elems[0] == 'VAR REF BEGIN':
                     vars_stack.append(Var())
-                    if elems[1] == 'SHELL': end_cmd_parsing = True
+                    if elems[1] == 'SHELL': 
+                        end_cmd_parsing = True
+
                 elif elems[0] == 'VAR REF END':
                     # FIXME
                     if elems[1] == 'AUTO':
@@ -629,8 +631,9 @@ class VizMake:
                     break
             if not to_add: continue
             # Normalize
-            if f.startswith('./'):
-                f = f[2:]
+            # if f.startswith('./'):
+            #    f = f[2:]
+            f = os.path.abspath(f)
             ret.append(f)
         return set(ret)
 
@@ -834,6 +837,12 @@ class VizMake:
         os.system('mkdir -p %s/vizengine/make/cmd' % self.virtual_working_dir)
         os.system('mkdir -p %s/vizengine/make/var' % self.virtual_working_dir)
         os.system('mkdir -p %s/vizengine/make/dep' % self.virtual_working_dir)
+
+#        os.system('cp -f %s/vizengine/tmpl/details.html %s/vizengine/make/dep/' \
+#                      %  (self.virtual_working_dir, self.virtual_working_dir))
+#        os.system('cp -f %s/vizengine/tmpl/details.html %s/vizengine/make/var/' \
+#                      %  (self.virtual_working_dir, self.virtual_working_dir))
+
         for pid, proc in self.proc_map.iteritems():
             self._visualize(proc)
 
@@ -1015,7 +1024,7 @@ class VizMake:
         with open('%s/%s.html' % (base_path, url), 'r') as f:
             string = f.read()
             string = string.replace('$$PID_VALUE$$', proc.pid)
-            string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 21))
+            string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 30))
 
         with open('%s/%s.html' % (base_path, url), 'w') as f:
             f.write(string)

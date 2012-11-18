@@ -2127,14 +2127,14 @@ exec_command (char **argv, char **envp, struct child* child)
     strncat(buf, " ", BSIZE);
   }
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
-  debugfp = fopen(logfile, "w");
-  vprint("PARENT---%d", getppid());
+  FILE* debugfp3 = fopen(logfile, "w");
+  fprintf(debugfp3, "PARENT---%d\n", getppid());
   if (child)
-    vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
+    fprintf(debugfp3, "EXE---%s/%s---%d---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
            child->file->cmds->fileinfo.fileno+child->command_line-1, child->file->name, buf);
   else
-    vprint("EXE---NULL---0---NULL---%s", buf);
-	fflush(debugfp);
+    fprintf(debugfp3, "EXE---NULL---0---NULL---%s\n", buf);
+	fflush(debugfp3);
 	// fclose(debugfp);
 
   execve (argv[0], argv, envp);
@@ -2238,14 +2238,14 @@ exec_command (char **argv, char **envp, struct child* child)
   }
   char logfile[256];
   snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
-  debugfp = fopen(logfile, "w");
-  vprint("PARENT---%d", getppid());
+  FILE* debugfp1 = fopen(logfile, "w");
+  fprintf(debugfp1, "PARENT---%d\n", getppid());
   if (child)
-    vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
+    fprintf(debugfp1, "EXE---%s/%s---%d---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
            child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
   else
-    vprint("EXE---NULL---0---NULL---%s", buf);
-	fflush(debugfp);
+    fprintf(debugfp1, "EXE---NULL---0---NULL---%s\n", buf);
+	fflush(debugfp1);
 	// fclose(debugfp);
 
   execvp (argv[0], argv);
@@ -2323,15 +2323,17 @@ exec_command (char **argv, char **envp, struct child* child)
           strncat(buf, " ", BSIZE);
         }
         snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
-        debugfp = fopen(logfile, "w");
-        vprint("PARENT---%d", getppid());
+        FILE* debugfp2 = fopen(logfile, "w");
+        fprintf(debugfp2, "PARENT---%d\n", getppid());
         if (child)
-          vprint("EXE---%s/%s---%d---%s---%s", starting_directory, child->file->cmds->fileinfo.filenm,
-                 child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
+          fprintf(debugfp2, "EXE---%s/%s---%d---%s---%s\n", starting_directory,
+                  child->file->cmds->fileinfo.filenm,
+                  child->file->cmds->fileinfo.lineno+child->command_line-1,
+                  child->file->name, buf);
         else
-          vprint("EXE---NULL---0---NULL---%s", buf);
+          fprintf(debugfp2, "EXE---NULL---0---NULL---%s\n", buf);
 
-				fflush(debugfp);
+				fflush(debugfp2);
 				// fclose(debugfp);
         execvp (shell, new_argv);
 # endif
