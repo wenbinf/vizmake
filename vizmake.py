@@ -588,8 +588,8 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-        if self._make() == 0:
-#        if True:
+#        if self._make() == 0:
+        if True:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()

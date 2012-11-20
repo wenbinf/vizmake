@@ -26,18 +26,6 @@
 			stroke-width: 1.5px;
 			}
 
-			div.tooltip {
-			position: absolute;
-			text-align: left;
-			width: 300px;
-			height:250px;
-			padding: 8px;
-			font: 11px sans-serif;
-			background: #ffff99;
-			border: solid 1px #aaa;
-			border-radius: 8px;
-			pointer-events: none;
-			}
 		</style>
 	</head>
 	<body>
@@ -194,7 +182,7 @@
 		function mouseout(d) {
 		if (d.tooltip == "NO") return;
 		if (d.type == "LINE" || d.type == "VAR") {
-		$("#details", window.parent.frames["details"].document).text("");
+		// $("#details", window.parent.frames["details"].document).text("");
 		}
 		}
 
