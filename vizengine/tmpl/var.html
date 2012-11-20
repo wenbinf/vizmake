@@ -101,7 +101,6 @@
     .style("fill", color)
     .on("click", click)
 		.on("mouseover", mouseover)
-		.on("mousemove", mousemove)
 		.on("mouseout", mouseout);
 		
 		nodeEnter.append("svg:text")
@@ -179,15 +178,6 @@
 
 		function mouseover(d) {
 		if (d.tooltip == "NO") return;
-		if (d.type == "LINE" || d.type == "VAR") {
-		div.transition()
-		.duration(300)
-		.style("opacity", 1);
-		}
-		}
-
-		function mousemove(d) {
-		if (d.tooltip == "NO") return;
 		var string = "";
 		if (d.type == "LINE") {
 		string += "Full CONTENT OF THIS LINE ===> "
@@ -197,24 +187,19 @@
 		return;
 		}
 
-    div.text(string)
-    .style("left", (d3.event.pageX ) + "px")
-    .style("top", (d3.event.pageY) + "px")
-		.append("p")
-		.text(d.full);
+		string += d.full;
+		$("#details", window.parent.frames["details"].document).text(string);
 		}
 
 		function mouseout(d) {
 		if (d.tooltip == "NO") return;
 		if (d.type == "LINE" || d.type == "VAR") {
-		div.transition()
-		.duration(300)
-		.style("opacity", 1e-6);
+		$("#details", window.parent.frames["details"].document).text("");
 		}
 		}
 
 		function color(d) {
-		if (d.type == "FILE") return "#3182bd";
+    if (d.type == "FILE") return "#3182bd";
 		else if (d.type == "LINE") return "#fd8d3c";
 		else if (d.type == "VAR") {
 		if (d.var_type == "FILE")	return "#c6dbef";

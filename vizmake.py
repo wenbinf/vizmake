@@ -1017,15 +1017,27 @@ class VizMake:
             string = func(*args)
             string = string.rstrip(',')
             f.write(string)
-        cmd = 'cp %s/tmpl/%s.html %s/%s.html' % \
+        cmd = 'cp %s/tmpl/container.html %s/%s.html' % \
+            (base_path, base_path, url)
+        os.system(cmd)
+        cmd = 'cp %s/tmpl/details.html %s/%s_detail.html' % \
+            (base_path, base_path, url)
+        os.system(cmd)
+        cmd = 'cp %s/tmpl/%s.html %s/%s_vis.html' % \
             (base_path, vis_type, base_path, url)
         os.system(cmd)
+
         string = ''
-        with open('%s/%s.html' % (base_path, url), 'r') as f:
+        with open('%s/%s_vis.html' % (base_path, url), 'r') as f:
             string = f.read()
             string = string.replace('$$PID_VALUE$$', proc.pid)
             string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 30))
-
+        with open('%s/%s_vis.html' % (base_path, url), 'w') as f:
+            f.write(string)
+        with open('%s/%s.html' % (base_path, url), 'r') as f:
+            string = f.read()
+            string = string.replace('$$VIS_PAGE$$', '%s_vis.html' % proc.pid)
+            string = string.replace('$$DETAIL_PAGE$$', '%s_detail.html' % proc.pid)
         with open('%s/%s.html' % (base_path, url), 'w') as f:
             f.write(string)
 
