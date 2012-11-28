@@ -113,7 +113,7 @@ class MakeFile:
     Description:
       It represents a makefile.
     """
-    def __init__(self, filenm):
+    def __init__(self, filenm, pid):
         # included makefiles
         self.inc_files = []
 
@@ -122,6 +122,9 @@ class MakeFile:
 
         # file name
         self.filenm = filenm
+
+        # pid
+        self.pid = pid
 
     def __str__(self):
         string = "== %s ==\n" % self.filenm
@@ -221,6 +224,9 @@ class StraceProcess:
         # Child pid
         self.child_pids = []
 
+        # Parent strace proc
+        self.parent_proc = None
+
         # Trace filename
         self.filenm = filenm
 
@@ -232,6 +238,8 @@ class StraceProcess:
 
         # Files that are executed
         self.exe_files = []
+
+        self.cmd = ''
 
     def update(self):
         with open(self.filenm) as f:
@@ -254,6 +262,7 @@ class StraceProcess:
                 exec_match = re.match('execve\s*\(\"(.+)\"\s*,.*\).+', line)
                 if exec_match:
                     self.exe_files.append(os.path.basename(exec_match.group(1).split('"')[0]))
+                    self.cmd = line
                     continue
 
 
@@ -450,7 +459,7 @@ class Process:
 #                print line
                 elems = line.split('---')
                 if elems[0] == 'START EVAL MAKEFILE':
-                    makefiles.append(MakeFile(elems[1]))
+                    makefiles.append(MakeFile(elems[1], self.pid))
                 elif elems[0] == 'END EVAL MAKEFILE':
                     self.root_makefile = makefiles.pop()
                     if len(makefiles) > 0:
@@ -740,6 +749,14 @@ class VizMake:
             self.strace_proc_map[pid] = StraceProcess(pid, logfile)
             self.strace_proc_map[pid].update()
 
+        # Update parent process for each proc    
+        for pid, proc in self.strace_proc_map.iteritems():     
+            for child_pid in proc.child_pids:
+                try:
+                    self.strace_proc_map[child_pid].parent_proc = proc
+                except:
+                    pass
+
         for proc in self.make_procs:
             for trg, rule in proc.rules.iteritems():
                 rule.update()
@@ -822,7 +839,7 @@ class VizMake:
             proc_str = '<i>COMMAND %s: %s</i>' % (proc_str, exe_str)
             proc_str = '%s (<a href="%s.html" target="_blank">CMD</a>)' % (proc_str, proc.cmd_url)
         else:
-            proc_str = 'MAKE %s: %s' % (proc_str, proc.root_makefile.filenm)
+            proc_str = '<font color="red">MAKE</font> %s: %s' % (proc_str, proc.root_makefile.filenm)
             proc_str = '%s (<a href="%s.html" target="_blank">CMD</a> | '\
                 '<a href="%s.html" target="_blank">VAR</a> | '  \
                 '<a href="%s.html" target="_blank">DEP</a>)' % \
@@ -840,18 +857,72 @@ class VizMake:
         string += '</li>'
         return string
 
+    def _get_real_cmd(self, proc):
+        if proc == None: return ''
+        if proc.cmd != '': return proc.cmd
+        return self._get_real_cmd(proc.parent_proc)
+
+    def _gen_strace_proc_list(self, proc):
+        string = '<li>'
+        proc_str = 'PID=%s' % proc.pid
+        try:
+            cproc = self.proc_map[proc.pid]
+            if cproc.type == 'CMD':
+                exe_str = cproc.exe[:50]
+                if len(cproc.exe) > 50: exe_str += '...'
+                proc_str = '<i>COMMAND %s: %s</i>' % (proc_str, exe_str)
+                proc_str = '%s (<a href="%s.html" target="_blank">CMD</a>)' % (proc_str, cproc.cmd_url)
+            else:
+                proc_str = '<font color="red">MAKE</font> %s: %s' % (proc_str, cproc.root_makefile.filenm)
+                proc_str = '%s (<a href="%s.html" target="_blank">CMD</a> | '\
+                    '<a href="%s.html" target="_blank">VAR</a> | '  \
+                    '<a href="%s.html" target="_blank">DEP</a>)' % \
+                    (proc_str, cproc.cmd_url, cproc.var_url, cproc.dep_url)
+        except:
+            exe_str = self._get_real_cmd(proc)
+            if proc.cmd == '':
+                exe_str = '(FORKED) %s ...' % exe_str[:50]
+            else:
+                exe_str = '%s ...' % exe_str[:50]
+            proc_str = '<i>COMMAND %s: %s</i>' % (proc_str, exe_str)
+
+        string += proc_str
+        string += '<ul>'
+        for child_pid in proc.child_pids:
+            try:
+                child_proc = self.strace_proc_map[child_pid]
+                string += self._gen_strace_proc_list(child_proc)
+            except:
+                pass
+        string += '</ul>'
+        string += '</li>'
+        return string
+
     def _gen_index(self):
         """
         Generate an index page to display processes
         """
-        with open('%svizengine/index.html' % self.virtual_working_dir, \
-                      'w') as f:
-            string = '<html><head><title>Analyze Makefile</title></head><body><ul>'
-            for proc in self.make_procs:
-#                print proc
-                string += self._gen_proc_list(proc)
-            string += '</ul></body></html>'
-            f.write(string)
+        if sys.platform.find('linux') == -1:
+            with open('%svizengine/index.html' % self.virtual_working_dir, \
+                          'w') as f:
+                string = '<html><head><title>Analyze Makefile</title></head><body><ul>'
+                for proc in self.make_procs:
+                    string += self._gen_proc_list(proc)
+                string += '</ul></body></html>'
+                f.write(string)
+        else:
+            with open('%svizengine/index.html' % self.virtual_working_dir, \
+                          'w') as f:
+                string = '<html><head><title>Analyze Makefile</title></head><body><ul>'
+                root_pid = ''
+                for proc in self.make_procs:
+                    if proc.ppid not in self.proc_map:
+                        root_pid = proc.pid
+                        break
+                root_proc = self.strace_proc_map[root_pid]
+                string += self._gen_strace_proc_list(root_proc)
+                string += '</ul></body></html>'
+                f.write(string)
 
     def _gen_vis(self):
         """
