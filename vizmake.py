@@ -44,7 +44,7 @@ class Var:
         self.expanded_value = ''
 
         # variable type, should be one of those:
-        # DEFAULT, COMMAND, FILE, UNDEFINED, AUTOMATIC, ENV
+        # DEFAULT, COMMAND, FILE, UNDEFINED, AUTOMATIC, ENV, OVERRIDE
         self.type = ''
 
         # Location of variable definition, valid only when type = FILE
@@ -53,9 +53,9 @@ class Var:
 
     def __str__(self):
         string = "VAR name=%s, value=%s, type=%s" % (self.name, self.value, self.type)
-        if self.type == 'FILE':
+        if self.type == 'FILE' or self.type == 'OVERRIDE':
             string = '%s, file=%s:%s' % (string, self.filenm, self.lineno)
-        string = '%s\n-include: ' % string
+        string = '%s\n-reference: ' % string
         for var in self.var_refs:
             string = '%s%s ' % (string, var.name)
         string += '\n'
@@ -429,8 +429,11 @@ class Process:
         structure.
         """
         for cmd in self.cmds:
-            line = self.file_line_map[cmd.filemn][cmd.lineno]
-            line.var_refs = cmd.var_refs
+            try:
+                line = self.file_line_map[cmd.filemn][cmd.lineno]
+                line.var_refs = cmd.var_refs
+            except:
+                pass
 
     def _parse(self, filenm):
         """
@@ -461,41 +464,45 @@ class Process:
                     self.file_line_map[makefiles[-1].filenm][elems[1]] = makefiles[-1].lines[-1]
 
                 elif elems[0] == 'VAR REF BEGIN':
+                    # XXX: how to handle unpaired variable trace??
+                    if elems[1] == '-*-command-variables-*': 
+                        continue
                     vars_stack.append(Var())
-                    if elems[1] == 'SHELL': 
-                        end_cmd_parsing = True
 
                 elif elems[0] == 'VAR REF END':
                     # FIXME
                     if elems[1] == 'AUTO':
                         continue
-                    cur_var = vars_stack.pop()
-                    cur_var.type = elems[1]
-                    if cur_var.type == 'FILE':
-                        cur_var.filenm = elems[4]
-                        cur_var.lineno = elems[5]
-                    cur_var.name = elems[2]
-                    if cur_var.type != 'UNDEFINED':
-                        cur_var.value = elems[3]
-                        if cur_var.type == 'FILE':
-                            cur_var.expanded_value = elems[6]
-                        else:
-                            cur_var.expanded_value = elems[4]
-                    else:
-                        cur_var.value = ''
-                    if len(vars_stack) == 0:
-                        try:
-                            makefiles[-1].lines[-1].var_refs.append(cur_var)
-                        except:
-                            if end_cmd_parsing == False:
-                                try:
-                                    self.cmds[-1].var_refs.append(cur_var)
-                                except:
-                                    self.var_refs.append(cur_var)
+                    try:
+                        cur_var = vars_stack.pop()
+                        cur_var.type = elems[1]
+                        if cur_var.type == 'FILE' or cur_var.type == 'OVERRIDE':
+                            cur_var.filenm = elems[4]
+                            cur_var.lineno = elems[5]
+                        cur_var.name = elems[2]
+                        if cur_var.type != 'UNDEFINED':
+                            cur_var.value = elems[3]
+                            if cur_var.type == 'FILE' or cur_var.type == 'OVERRIDE':
+                                cur_var.expanded_value = elems[6]
                             else:
-                                self.var_refs.append(cur_var)
-                    else:
-                        vars_stack[-1].var_refs.append(cur_var)
+                                cur_var.expanded_value = elems[4]
+                        else:
+                            cur_var.value = ''
+                        if len(vars_stack) == 0:
+                            try:
+                                makefiles[-1].lines[-1].var_refs.append(cur_var)
+                            except:
+                                if end_cmd_parsing == False:
+                                    try:
+                                        self.cmds[-1].var_refs.append(cur_var)
+                                    except:
+                                        self.var_refs.append(cur_var)
+                                else:
+                                    self.var_refs.append(cur_var)
+                        else:
+                            vars_stack[-1].var_refs.append(cur_var)
+                    except:
+                        pass
                 elif elems[0] == 'CMD':
                     self.cmds.append(Command(elems[1], elems[2], elems[3]))
                 elif len(elems) == 1:
@@ -579,6 +586,11 @@ class VizMake:
         # How many nodes in the indented tree?
         self.num_nodes = 0
 
+        self.undefined_var = []
+        self.file_var = []
+        self.cmd_var = []
+        self.env_var = []
+
     def run(self):
         """
         Description:
@@ -590,14 +602,30 @@ class VizMake:
         """
 #        if self._make() == 0:
         if True:
+            self._make()
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
             self._gen_index()
             self._gen_vis()
+            self._report()
             self._start_httpd()
         else:
             print "** Make fails ..."
+
+    def _report(self):
+        """
+        Report potential problems
+        """
+        print 'Variables defined from command line:'
+        for var in self.cmd_var:
+            print '- $(%s)=%s' % (var.name, var.value)
+        print 'Variables undefined:'
+        for var in self.undefined_var:
+            print '- $(%s)' % (var.name)
+        print 'Variables defined from Makefile:'
+        for var in self.file_var:
+            print '- $(%s)=%s' % (var.name, var.value)
 
     def _sanitize_files(self, file_list):
         """
@@ -878,15 +906,27 @@ class VizMake:
         tooltip = json.dumps(tooltip)
         name = '$(%s)="%s" ' % (var.name, value)
         var_type = ''
+
         if var.type == 'FILE':
+            if re.compile('\@.+\@').match(value):
+                name = '$(%s) that is undefined' % var.name
+                var_type = 'UNDEFINED'
+                self.undefined_var.append(var)
+            else:
+                name += ('from %s:%s' % (var.filenm, var.lineno))
+                var_type = 'FILE'
+                self.file_var.append(var)
+        elif var.type == 'OVERRIDE':
             name += ('from %s:%s' % (var.filenm, var.lineno))
-            var_type = 'FILE'
-        elif var.type == 'COMMAND':
+            var_type = 'OVERRIDE'
+        elif var.type == 'CMD':
             name += 'from command line'
             var_type = 'COMMAND'
+            self.cmd_var.append(var)
         elif var.type == 'UNDEFINED':
             name += 'that is undefined'
             var_type = 'UNDEFINED'
+            self.undefined_var.append(var)
         elif var.type == 'AUTOMATIC':
             name += 'that is an automatic variable'
             var_type = 'AUTOMATIC'
@@ -896,6 +936,7 @@ class VizMake:
         elif var.type == 'ENV':
             name += 'from environment variable'
             var_type = 'ENV'
+            self.env_var.append(var)
         name = json.dumps(name)
         var_type = json.dumps(var_type)
         string = '%s"name":%s,"full":%s,"type":"VAR","var_type":%s, "tooltip":%s,"children":[' % \

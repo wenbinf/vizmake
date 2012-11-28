@@ -203,7 +203,8 @@ void vprint_var(struct variable* v, char* value) {
     vprint("VAR REF END---CMD---%s---%s---%s", v->name, v->value, value);
     break;
   case o_override:
-    assert(0 && "override");
+    vprint("VAR REF END---OVERRIDE---%s---%s---%s---%lu---%s",
+           v->name, v->value, v->fileinfo.filenm, v->fileinfo.lineno, value);
     break;
   case o_automatic:
     // XXX: Don't handle automatic variable for now
