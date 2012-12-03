@@ -609,15 +609,15 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-#        if self._make() == 0:
-        if True:
-            self._make()
+        if self._make() == 0:
+#        if True:
+#            self._make()
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
             self._gen_index()
             self._gen_vis()
-            self._report()
+#            self._report()
             self._start_httpd()
         else:
             print "** Make fails ..."
@@ -790,7 +790,7 @@ class VizMake:
                     if md not in all_deps:
                         new_missing_dependees.append(md)
                 rule.missing_dependees = new_missing_dependees
-                print rule
+                # print rule
 
     def _process(self):
         """
@@ -1143,7 +1143,7 @@ class VizMake:
         with open('%s/%s_vis.html' % (base_path, url), 'r') as f:
             string = f.read()
             string = string.replace('$$PID_VALUE$$', proc.pid)
-            string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 30))
+            string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 50))
         with open('%s/%s_vis.html' % (base_path, url), 'w') as f:
             f.write(string)
         with open('%s/%s.html' % (base_path, url), 'r') as f:
