@@ -1,0 +1,1 @@
+{"name":"PID=7923: /home/demo/vizmake/make/make -j4 (Executed Rules:1)","type":"PROC", "children":[{"name":"Target: all (Missing:0, Extra:1, Correct:0)","type":"TARGET","cmd":"Line 381 in /home/demo/make/Makefile\n", "children":[{"name":"Extra Dependency: /home/demo/make/config.h","type":"EFILE","cmd":"","children":[]}]}]}
