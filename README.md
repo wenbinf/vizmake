@@ -68,6 +68,10 @@ This screenshot is in a browser showing the visualization of dependencies in rul
 view after clicking on one DEP link in the index page:
 ![screenshot](https://github.com/wenbinf/vizmake/raw/master/doc/vizmake_dep.png)
 
-### Demo
+## Demo
 
 http://wenbinf.github.com/vizmake/demo
+
+## License
+
+GPLv3
