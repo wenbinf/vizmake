@@ -1089,10 +1089,13 @@ start_job_command (struct child *child)
 		char buf[BSIZE];
 		buf[0] = '\0';
 		int i;
-		for (i = 0; argv[i]; i++) {
-			strncat(buf, argv[i], BSIZE);
-			strncat(buf, " ", BSIZE);
-			// snprintf(buf, 1024, "%s %s", buf, argv[i]);
+
+		if (argv != NULL) {
+		  for (i = 0; argv[i]; i++) {
+		    strncat(buf, argv[i], BSIZE);
+		    strncat(buf, " ", BSIZE);
+		    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
+		  }
 		}
     
 		char filenm[BSIZE];
