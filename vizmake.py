@@ -465,13 +465,17 @@ class Process:
                     if len(makefiles) > 0:
                         makefiles[-1].inc_files.append(self.root_makefile)
                 elif elems[0] == 'EVAL LINE':
-                    makefiles[-1].lines.append(Line(elems[1], elems[2]))
-                    try:
-                        self.file_line_map[makefiles[-1].filenm]
-                    except:
-                        self.file_line_map[makefiles[-1].filenm] = dict()
-                    self.file_line_map[makefiles[-1].filenm][elems[1]] = makefiles[-1].lines[-1]
-
+                    # Do not consume EVAL LINE that is not between a
+                    # START EVAL MAKEFILE and a END EVAL MAKEFILE
+                    # EVAL LINE can also come from explicit Makefile
+                    # calls to $(eval), we can't handle that.
+                    if len(makefiles) > 0:
+                        makefiles[-1].lines.append(Line(elems[1], elems[2]))
+                        try:
+                            self.file_line_map[makefiles[-1].filenm]
+                        except:
+                            self.file_line_map[makefiles[-1].filenm] = dict()
+                            self.file_line_map[makefiles[-1].filenm][elems[1]] = makefiles[-1].lines[-1]
                 elif elems[0] == 'VAR REF BEGIN':
                     # XXX: how to handle unpaired variable trace??
                     if elems[1] == '-*-command-variables-*': 
