@@ -583,10 +583,13 @@ class VizMake:
     Description:
       The central manager to visualize make
     """
-    def __init__(self, logdir):
+    def __init__(self, logdir, no_build):
         # Where the log files are stored
         self.logdir = os.path.expanduser(logdir);
         os.environ['VIZMAKE_LOG_DIR'] = self.logdir
+
+        # If set, only process logs (if there), no build
+        self.no_build = no_build
 
         # pid => Process
         self.proc_map = dict()
@@ -618,9 +621,7 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-        if self._make() == 0:
-#        if True:
-#            self._make()
+        if self.no_build or self._make() == 0:
             self._process()
             if sys.platform.find('linux') != -1:
                 self._strace()
@@ -1245,12 +1246,13 @@ def main():
  
     parser = argparse.ArgumentParser()
     parser.add_argument("--logdir", default="/tmp")
+    parser.add_argument("--no-build", action="store_true")
     args, extra = parser.parse_known_args()
 
     sys.argv = extra
     sys.argv.insert(0, progname)
 
-    viz = VizMake(args.logdir)
+    viz = VizMake(args.logdir, args.no_build)
     viz.run()
 
 if __name__ == '__main__':
