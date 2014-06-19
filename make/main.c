@@ -85,6 +85,9 @@ static const char *define_makeflags (int all, int makefile);
 static char *quote_for_env (char *out, const char *in);
 static void initialize_global_hash_tables (void);
 
+
+char *vizmake_log_dir;
+
 
 /* The structure that describes an accepted command switch.  */
 
@@ -918,10 +921,6 @@ main (int argc, char **argv)
 	main (int argc, char **argv, char **envp)
 #endif
 {
-  /* Vizmake
-   */
-	open_log(argv);
-
   static char *stdin_nm = 0;
   int makefile_status = MAKE_SUCCESS;
   struct dep *read_makefiles;
@@ -937,6 +936,13 @@ main (int argc, char **argv)
   unixy_shell = 0;
   no_default_sh_exe = 1;
 #endif
+
+  /* Vizmake
+   */
+  if ((vizmake_log_dir = getenv("VIZMAKE_LOG_DIR")) == NULL)
+    vizmake_log_dir = "/tmp";
+
+  open_log(argv);
 
 #ifdef SET_STACK_SIZE
 	/* Get rid of any avoidable limit on stack size.  */
@@ -3297,13 +3303,13 @@ void open_log(char** argv) {
   // Open the file dedicated to record dependencies
   // Filename format: vizmake_log-pid-dep
 	char filenm[SSIZE];
-	snprintf(filenm, SSIZE, "touch /tmp/vizmake_log-%d-dep", getpid());
+	snprintf(filenm, SSIZE, "touch %s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 	system(filenm);
 
   // Open the major file
   // Filename format: vizmake_log-pid-timestamp
 	char logfile[SSIZE];
-	snprintf(logfile, SSIZE, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+	snprintf(logfile, SSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
 	debugfp = fopen(logfile, "w");
 
   // Trace: PARENT, the parent process pid

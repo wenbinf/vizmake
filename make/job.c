@@ -1096,7 +1096,7 @@ start_job_command (struct child *child)
 		}
     
 		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
+		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "CMD-EXE---%s---%s/%s---%d---%s\n", child->file->name, starting_directory,
@@ -1835,7 +1835,7 @@ new_job (struct file *file)
                    cmds->fileinfo.filenm, cmds->fileinfo.lineno,
                    c->file->name));
 		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
+		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "TARGET---%s---%s/%s---%d\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
 		fclose(fp);
@@ -1844,7 +1844,7 @@ new_job (struct file *file)
     DB (DB_BASIC, (_("Invoking builtin recipe to update target `%s'.\n"),
                    c->file->name));
 		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
+		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 		FILE* fp = fopen(filenm, "a");
 		fprintf(fp, "TARGET---%s\n", c->file->name);
 		fclose(fp);
@@ -2126,7 +2126,7 @@ exec_command (char **argv, char **envp, struct child* child)
     strncat(buf, argv[i], BSIZE);
     strncat(buf, " ", BSIZE);
   }
-  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
+  snprintf(logfile, 256, "%s/vizmake_log-%d-%d", vizmake_log_dir, getpid(),get_usec());
   FILE* debugfp3 = fopen(logfile, "w");
   fprintf(debugfp3, "PARENT---%d\n", getppid());
   if (child)
@@ -2237,7 +2237,7 @@ exec_command (char **argv, char **envp, struct child* child)
     // snprintf(buf, 1024, "%s %s", buf, argv[i]);
   }
   char logfile[256];
-  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+  snprintf(logfile, 256, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
   FILE* debugfp1 = fopen(logfile, "w");
   fprintf(debugfp1, "PARENT---%d\n", getppid());
   if (child)
@@ -2322,7 +2322,7 @@ exec_command (char **argv, char **envp, struct child* child)
           strncat(buf, argv[i], BSIZE);
           strncat(buf, " ", BSIZE);
         }
-        snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+        snprintf(logfile, 256, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
         FILE* debugfp2 = fopen(logfile, "w");
         fprintf(debugfp2, "PARENT---%d\n", getppid());
         if (child)

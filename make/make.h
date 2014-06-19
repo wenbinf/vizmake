@@ -515,6 +515,8 @@ extern int warn_undefined_variables_flag, posix_pedantic, not_parallel;
 extern int second_expansion, clock_skew_detected, rebuilding_makefiles;
 extern int one_shell;
 
+extern char *vizmake_log_dir;
+
 /* can we run commands via 'sh -c xxx' or must we use batch files? */
 extern int batch_mode_shell;
 

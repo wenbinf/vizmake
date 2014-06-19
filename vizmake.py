@@ -568,6 +568,7 @@ import SimpleHTTPServer
 import SocketServer
 import time
 import socket
+import argparse
 
 #
 # The core class of vizmake
@@ -578,7 +579,11 @@ class VizMake:
     Description:
       The central manager to visualize make
     """
-    def __init__(self):
+    def __init__(self, logdir):
+        # Where the log files are stored
+        self.logdir = os.path.expanduser(logdir);
+        os.environ['VIZMAKE_LOG_DIR'] = self.logdir
+
         # pid => Process
         self.proc_map = dict()
 
@@ -603,8 +608,8 @@ class VizMake:
     def run(self):
         """
         Description:
-        1. Run modified GNU make, which generates trace data in /tmp/vizmake_log*
-        2. Process all /tmp/vizmake_log*, and build up data structures
+        1. Run modified GNU make, which generates trace data in vizmake_log*
+        2. Process all vizmake_log*, and build up data structures
         3. Generate index page
         4. Generate visualization pages
         5. Start web server
@@ -732,8 +737,8 @@ class VizMake:
 
     def _strace(self):
         """
-        Process /tmp/vizmake_log-.pid files
-        1. Iterate through all /tmp/vizmake_log-.pid files
+        Process vizmake_log-.pid files
+        1. Iterate through all vizmake_log-.pid files
            1.1 Get pid from file name
            1.2 Construct strace_process
            1.3 Add all accessed files
@@ -743,8 +748,8 @@ class VizMake:
                2.1.1 walk throuh files accessed by it and all of its child strace_process
         3. Sanitize files: accessed files and dependees       
         """
-        for logfile in sorted(glob.glob('/tmp/vizmake_log-.*')):
-            elems = logfile.split('-')
+        for logfile in sorted(glob.glob(self.logdir + '/vizmake_log-.*')):
+            elems = os.path.basename(logfile).split('-')
             pid = elems[1][1:]
             self.strace_proc_map[pid] = StraceProcess(pid, logfile)
             self.strace_proc_map[pid].update()
@@ -794,16 +799,16 @@ class VizMake:
 
     def _process(self):
         """
-        Process /tmp/vizmake_log-pid-time files
-        1. Iterate through all /tmp/vizmake_log-pid-time files
+        Process vizmake_log-pid-time files
+        1. Iterate through all vizmake_log-pid-time files
            1.1 Get pid from file name
            1.2 Construct process or add filenm to Process.filenm
         2. Iterate through all Process in self.proc_map
            2.1 Update it's fields
            2.2 Find its non-make child processes
         """
-        for logfile in sorted(glob.glob('/tmp/vizmake_log-*-*')):
-            elems = logfile.split('-')
+        for logfile in sorted(glob.glob(self.logdir + '/vizmake_log-*-*')):
+            elems = os.path.basename(logfile).split('-')
             pid = elems[1]
             timestamp = elems[2]
             if pid not in self.proc_map:
@@ -953,13 +958,13 @@ class VizMake:
 
         # TODO: Should also determine whether strace exists
         if sys.platform.find('linux') != -1:
-            make_cmd = 'strace -ff -o/tmp/vizmake_log- -e trace=open,'\
-                'process %smake/make' % self.virtual_working_dir
+            make_cmd = 'strace -ff -o%s/vizmake_log- -e trace=open,'\
+                'process %smake/make' % (self.logdir, self.virtual_working_dir)
 
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
         print "== Running ", make_cmd
-        os.system('rm -rf /tmp/vizmake_log*')
+        os.system('rm -rf ' + self.logdir + '/vizmake_log*')
         return os.system(make_cmd)
 
     def _vis_var(self, var):
@@ -1232,7 +1237,16 @@ class VizMake:
 # Main
 #======
 def main():
-    viz = VizMake()
+    progname = sys.argv[0]
+ 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--logdir", default="/tmp")
+    args, extra = parser.parse_known_args()
+
+    sys.argv = extra
+    sys.argv.insert(0, progname)
+
+    viz = VizMake(args.logdir)
     viz.run()
 
 if __name__ == '__main__':
