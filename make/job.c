@@ -1087,18 +1087,11 @@ start_job_command (struct child *child)
                                    child->file->cmds->lines_flags[child->command_line - 1],
                                    &child->sh_batch_file);
 		char buf[BSIZE];
-		buf[0] = '\0';
-		int i;
-
-		if (argv != NULL) {
-		  for (i = 0; argv[i]; i++) {
-		    strncat(buf, argv[i], BSIZE);
-		    strncat(buf, " ", BSIZE);
-		    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
-		  }
-		}
-    
 		char filenm[BSIZE];
+
+		if (argv != NULL)
+		  string_array_join(" ", argv, buf, BSIZE);
+
 		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 
 		FILE* fp = fopen(filenm, "a");
@@ -2123,12 +2116,8 @@ exec_command (char **argv, char **envp, struct child* child)
   /* Run the program.  */
 
   char buf[BSIZE];
-  buf[0] = '\0';
-  for (i = 0; argv[i]; i++) {
-    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-    strncat(buf, argv[i], BSIZE);
-    strncat(buf, " ", BSIZE);
-  }
+
+  string_array_join(" ", argv, buf, BSIZE);
   snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%d", vizmake_log_dir, getpid(),get_usec());
   FILE* debugfp3 = fopen(logfile, "w");
   fprintf(debugfp3, "PARENT---%d\n", getppid());
@@ -2231,15 +2220,10 @@ exec_command (char **argv, char **envp, struct child* child)
   environ = envp;
 
   char buf[BSIZE];
-  buf[0]='\0';
-  int i;
-  for (i = 0; argv[i]; i++) {
-    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-    strncat(buf, argv[i], BSIZE);
-    strncat(buf, " ", BSIZE);
-    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
-  }
   char logfile[BSIZE];
+
+  string_array_join(" ", argv, buf, BSIZE);
+
   snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
   FILE* debugfp1 = fopen(logfile, "w");
   fprintf(debugfp1, "PARENT---%d\n", getppid());
@@ -2319,12 +2303,9 @@ exec_command (char **argv, char **envp, struct child* child)
 # else
 
         char buf[BSIZE];
-        buf[0]='\0';
-        for (i = 0; argv[i]; i++) {
-          if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-          strncat(buf, argv[i], BSIZE);
-          strncat(buf, " ", BSIZE);
-        }
+
+        string_array_join(" ", argv, buf, BSIZE);
+
         snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
         FILE* debugfp2 = fopen(logfile, "w");
         fprintf(debugfp2, "PARENT---%d\n", getppid());

@@ -3319,13 +3319,8 @@ void open_log(char** argv) {
   // Trace: MAKE_EXE, the command line to execute this make
   // Format: MAKE_EXE---command line (with full arguments)
   if (!argv) return;
-	char cmdline[BSIZE];
-	cmdline[0] = '\0';
-	int i;
-	for (i = 0; argv[i]; i++) {
-    if (strlen(argv[i]) + strlen(cmdline) > BSIZE) break;
-    strncat(cmdline, argv[i], BSIZE);
-    strncat(cmdline, " ", BSIZE);
-  }
-	vprint("MAKE_EXE---%s", cmdline);
+        char cmdline[BSIZE];
+
+        string_array_join(" ", argv, cmdline, BSIZE);
+        vprint("MAKE_EXE---%s", cmdline);
 }

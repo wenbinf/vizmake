@@ -400,6 +400,7 @@ void print_spaces (unsigned int);
 char *find_percent (char *);
 const char *find_percent_cached (const char **);
 FILE *open_tmpfile (char **, const char *);
+int string_array_join (const char *, char **, char *, size_t);
 
 #ifndef NO_ARCHIVES
 int ar_name (const char *);
