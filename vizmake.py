@@ -969,7 +969,12 @@ class VizMake:
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
         print "== Running ", make_cmd
-        os.system('rm -rf ' + self.logdir + '/vizmake_log*')
+
+        # Remove old logs
+        filelist = glob.glob(self.logdir + '/vizmake_log*')
+        for f in filelist:
+            os.remove(f)
+
         return os.system(make_cmd)
 
     def _vis_var(self, var):
