@@ -937,8 +937,7 @@ main (int argc, char **argv)
   no_default_sh_exe = 1;
 #endif
 
-  /* Vizmake
-   */
+  /* Vizmake */
   if ((vizmake_log_dir = getenv("VIZMAKE_LOG_DIR")) == NULL)
     vizmake_log_dir = "/tmp";
 
@@ -3207,8 +3206,8 @@ die (int status)
 				print_data_base ();
 
       // Vizmake
-			open_log(NULL);
-			vprint_dep();
+      open_log(NULL);
+      vprint_dep();
 
       verify_file_data_base ();
 
@@ -3294,33 +3293,33 @@ log_working_directory (int entering)
 /* Vizmake
  */
 unsigned long get_usec() {
-	struct timeval tv;
-	int ret = gettimeofday(&tv, NULL);
-	if (ret == 0) return (tv.tv_sec * 1000000 + tv.tv_usec);
+  struct timeval tv;
+  int ret = gettimeofday(&tv, NULL);
+  if (ret == 0) return (tv.tv_sec * 1000000 + tv.tv_usec);
 }
 
 void open_log(char** argv) {
   // Open the file dedicated to record dependencies
   // Filename format: vizmake_log-pid-dep
-	char filenm[BSIZE];
-	snprintf(filenm, BSIZE, "touch %s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
-	system(filenm);
+  char filenm[BSIZE];
+  snprintf(filenm, BSIZE, "touch %s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+  system(filenm);
 
   // Open the major file
   // Filename format: vizmake_log-pid-timestamp
-	char logfile[BSIZE];
-	snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
-	debugfp = fopen(logfile, "w");
+  char logfile[BSIZE];
+  snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
+  debugfp = fopen(logfile, "w");
 
   // Trace: PARENT, the parent process pid
   // Format: PARENT---ppid
-	vprint("PARENT---%d", getppid());
+  vprint("PARENT---%d", getppid());
 
   // Trace: MAKE_EXE, the command line to execute this make
   // Format: MAKE_EXE---command line (with full arguments)
   if (!argv) return;
-        char cmdline[BSIZE];
+  char cmdline[BSIZE];
 
-        string_array_join(" ", argv, cmdline, BSIZE);
-        vprint("MAKE_EXE---%s", cmdline);
+  string_array_join(" ", argv, cmdline, BSIZE);
+  vprint("MAKE_EXE---%s", cmdline);
 }

@@ -1086,13 +1086,13 @@ start_job_command (struct child *child)
     argv = construct_command_argv (p, &end, child->file,
                                    child->file->cmds->lines_flags[child->command_line - 1],
                                    &child->sh_batch_file);
-		char buf[BSIZE];
-		char filenm[BSIZE];
+                char buf[BSIZE];
+                char filenm[BSIZE];
 
-		if (argv != NULL)
-		  string_array_join(" ", argv, buf, BSIZE);
+                if (argv != NULL)
+                  string_array_join(" ", argv, buf, BSIZE);
 
-		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+                snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 
     FILE* fp = fopen(filenm, "a");
     fprintf(fp, "CMD-EXE---%s---%s/%s---%lu---%s\n", child->file->name, starting_directory,
@@ -1839,12 +1839,12 @@ new_job (struct file *file)
   else {
     DB (DB_BASIC, (_("Invoking builtin recipe to update target `%s'.\n"),
                    c->file->name));
-		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "TARGET---%s\n", c->file->name);
-		fclose(fp);
-	}
+    char filenm[BSIZE];
+    snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "TARGET---%s\n", c->file->name);
+    fclose(fp);
+  }
 
   start_waiting_job (c);
 
@@ -2126,8 +2126,8 @@ exec_command (char **argv, char **envp, struct child* child)
            child->file->cmds->fileinfo.fileno+child->command_line-1, child->file->name, buf);
   else
     fprintf(debugfp3, "EXE---NULL---0---NULL---%s\n", buf);
-	fflush(debugfp3);
-	// fclose(debugfp);
+  fflush(debugfp3);
+  // fclose(debugfp);
 
   execve (argv[0], argv, envp);
   perror_with_name ("execve: ", argv[0]);
@@ -2232,8 +2232,8 @@ exec_command (char **argv, char **envp, struct child* child)
            child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
   else
     fprintf(debugfp1, "EXE---NULL---0---NULL---%s\n", buf);
-	fflush(debugfp1);
-	// fclose(debugfp);
+  fflush(debugfp1);
+  // fclose(debugfp);
 
   execvp (argv[0], argv);
 
@@ -2317,8 +2317,8 @@ exec_command (char **argv, char **envp, struct child* child)
         else
           fprintf(debugfp2, "EXE---NULL---0---NULL---%s\n", buf);
 
-				fflush(debugfp2);
-				// fclose(debugfp);
+        fflush(debugfp2);
+        // fclose(debugfp);
         execvp (shell, new_argv);
 # endif
         if (errno == ENOENT)
