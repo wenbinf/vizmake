@@ -573,6 +573,7 @@ import SocketServer
 import time
 import socket
 import argparse
+import shutil
 
 #
 # The core class of vizmake
@@ -1144,15 +1145,15 @@ class VizMake:
             string = func(*args)
             string = string.rstrip(',')
             f.write(string)
-        cmd = 'cp %s/tmpl/container.html %s/%s.html' % \
-            (base_path, base_path, url)
-        os.system(cmd)
-        cmd = 'cp %s/tmpl/details.html %s/%s_detail.html' % \
-            (base_path, base_path, url)
-        os.system(cmd)
-        cmd = 'cp %s/tmpl/%s.html %s/%s_vis.html' % \
-            (base_path, vis_type, base_path, url)
-        os.system(cmd)
+
+        shutil.copy2('%s/tmpl/container.html' % (base_path),
+                     '%s/%s.html' % (base_path, url))
+
+        shutil.copy2('%s/tmpl/details.html' % (base_path),
+                     '%s/%s_detail.html' % (base_path, url))
+
+        shutil.copy2('%s/tmpl/%s.html' % (base_path, vis_type),
+                     '%s/%s_vis.html' % (base_path, url))
 
         string = ''
         with open('%s/%s_vis.html' % (base_path, url), 'r') as f:
