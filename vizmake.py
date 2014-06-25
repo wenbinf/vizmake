@@ -584,10 +584,13 @@ class VizMake:
     Description:
       The central manager to visualize make
     """
-    def __init__(self, logdir, web_root, no_build):
+    def __init__(self, logdir, web_root, no_build, launch_httpd):
         # Where the log files are stored
         self.logdir = os.path.expanduser(logdir);
         os.environ['VIZMAKE_LOG_DIR'] = self.logdir
+
+        # If set, start httpd directly
+        self.launch_httpd = launch_httpd
 
         # If set, only process logs (if there), no build
         self.no_build = no_build
@@ -630,16 +633,19 @@ class VizMake:
         4. Generate visualization pages
         5. Start web server
         """
-        if self.no_build or self._make() == 0:
-            self._process()
-            if sys.platform.find('linux') != -1:
-                self._strace()
-            self._gen_index()
-            self._gen_vis()
-#            self._report()
+
+        if self.launch_httpd:
             self._start_httpd()
         else:
-            print "** Make fails ..."
+            if self.no_build or self._make() == 0:
+                self._process()
+                if sys.platform.find('linux') != -1:
+                    self._strace()
+                    self._gen_index()
+                    self._gen_vis()
+                    self._start_httpd()
+                else:
+                    print "** Make fails ..."
 
     def _report(self):
         """
@@ -1225,6 +1231,11 @@ class VizMake:
         """
         Set up a simple web server for visualization
         """
+
+        if not os.path.exists(self.web_root):
+            print "*** Web root '%s' does not exist." % self.web_root
+            sys.exit(1)
+
         os.chdir(self.web_root)
         httpd = None
         print "Starting web server for visualization ..."
@@ -1258,12 +1269,13 @@ def main():
     parser.add_argument("--logdir", default="/tmp")
     parser.add_argument("--no-build", action="store_true")
     parser.add_argument("--web-root")
+    parser.add_argument("--launch-httpd", action="store_true")
     args, extra = parser.parse_known_args()
 
     sys.argv = extra
     sys.argv.insert(0, progname)
 
-    viz = VizMake(args.logdir, args.web_root, args.no_build)
+    viz = VizMake(args.logdir, args.web_root, args.no_build, args.launch_httpd)
     viz.run()
 
 if __name__ == '__main__':
