@@ -26,6 +26,7 @@ Let $(VIZMAKE) be the path of the root directory of vizmake project.
 * There are some special command line arguments that vizmake.py will consume before they reach `make`:
   * --logdir, used for specifying where the log files are written to and read from, default is '/tmp'
   * --no-build, tell vizmake.py to start processing the logs in --logdir without invoking `make` first.
+  * --web-root, used for specifying where the visualizing files are stored and from where the web server will be started.
 * Open web browser to see http://localhost:8000
 
 ## Screenshots

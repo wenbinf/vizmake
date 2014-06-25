@@ -584,7 +584,7 @@ class VizMake:
     Description:
       The central manager to visualize make
     """
-    def __init__(self, logdir, no_build):
+    def __init__(self, logdir, web_root, no_build):
         # Where the log files are stored
         self.logdir = os.path.expanduser(logdir);
         os.environ['VIZMAKE_LOG_DIR'] = self.logdir
@@ -601,9 +601,17 @@ class VizMake:
         # A list of make processes, sorted by timestamp
         self.make_procs = []
 
-        self.virtual_working_dir = sys.argv[0][:-10]
-        if len(self.virtual_working_dir) == 0:
-            self.virtual_working_dir = './'
+        # Paths to core functions
+        base_path = os.path.abspath(sys.argv[0])
+        virtual_working_dir = os.path.dirname(base_path)
+
+        self.make = '%s/make/make' % virtual_working_dir
+        self.template_dir = '%s/vizengine/tmpl' % virtual_working_dir
+        self.lib_dir = '%s/vizengine/lib' % virtual_working_dir
+
+        # The root of the web server
+        self.web_root = web_root or '%s/vizengine' % virtual_working_dir
+        self.web_root = os.path.expanduser(self.web_root)
 
         # How many nodes in the indented tree?
         self.num_nodes = 0
@@ -914,16 +922,14 @@ class VizMake:
         Generate an index page to display processes
         """
         if sys.platform.find('linux') == -1:
-            with open('%svizengine/index.html' % self.virtual_working_dir, \
-                          'w') as f:
+            with open('%s/index.html' % self.web_root, 'w') as f:
                 string = '<html><head><title>Analyze Makefile</title></head><body><ul>'
                 for proc in self.make_procs:
                     string += self._gen_proc_list(proc)
                 string += '</ul></body></html>'
                 f.write(string)
         else:
-            with open('%svizengine/index.html' % self.virtual_working_dir, \
-                          'w') as f:
+            with open('%s/index.html' % self.web_root, 'w') as f:
                 string = '<html><head><title>Analyze Makefile</title></head><body><ul>'
                 root_pid = ''
                 for proc in self.make_procs:
@@ -942,16 +948,18 @@ class VizMake:
         1. Clean up all files in make directory
         2. Generate pages
         """
-        os.system('mkdir -p %s/vizengine/make' % self.virtual_working_dir)
-        os.system('rm -rf %s/vizengine/make/*' % self.virtual_working_dir)
-        os.system('mkdir -p %s/vizengine/make/cmd' % self.virtual_working_dir)
-        os.system('mkdir -p %s/vizengine/make/var' % self.virtual_working_dir)
-        os.system('mkdir -p %s/vizengine/make/dep' % self.virtual_working_dir)
+        make_dir = '%s/make' % self.web_root
+        lib_dir = '%s/lib' % self.web_root
 
-#        os.system('cp -f %s/vizengine/tmpl/details.html %s/vizengine/make/dep/' \
-#                      %  (self.virtual_working_dir, self.virtual_working_dir))
-#        os.system('cp -f %s/vizengine/tmpl/details.html %s/vizengine/make/var/' \
-#                      %  (self.virtual_working_dir, self.virtual_working_dir))
+        if os.path.exists(make_dir):
+             shutil.rmtree(make_dir)
+
+        os.makedirs('%s/cmd' % make_dir)
+        os.makedirs('%s/var' % make_dir)
+        os.makedirs('%s/dep' % make_dir)
+
+        if not os.path.exists(lib_dir):
+            shutil.copytree(self.lib_dir, lib_dir)
 
         for pid, proc in self.proc_map.iteritems():
             self._visualize(proc)
@@ -960,12 +968,12 @@ class VizMake:
         """
         A GNU make wrapper
         """
-        make_cmd = "%smake/make" % self.virtual_working_dir
+        make_cmd = self.make
 
         # TODO: Should also determine whether strace exists
         if sys.platform.find('linux') != -1:
             make_cmd = 'strace -ff -o%s/vizmake_log- -e trace=open,'\
-                'process %smake/make' % (self.logdir, self.virtual_working_dir)
+                'process %s' % (self.logdir, self.make)
 
         for i in range(1, len(sys.argv)):
             make_cmd = "%s %s" % (make_cmd, sys.argv[i])
@@ -1139,34 +1147,32 @@ class VizMake:
         """
         Generate a type of visualization pages
         """
-        base_path = '%svizengine' % self.virtual_working_dir
-        with open("%s/%s.json" % \
-                      (base_path, url), "w") as f:
+        with open("%s/%s.json" % (self.web_root, url), "w") as f:
             string = func(*args)
             string = string.rstrip(',')
             f.write(string)
 
-        shutil.copy2('%s/tmpl/container.html' % (base_path),
-                     '%s/%s.html' % (base_path, url))
+        shutil.copy2('%s/container.html' % self.template_dir,
+                     '%s/%s.html' % (self.web_root, url))
 
-        shutil.copy2('%s/tmpl/details.html' % (base_path),
-                     '%s/%s_detail.html' % (base_path, url))
+        shutil.copy2('%s/details.html' % self.template_dir,
+                     '%s/%s_detail.html' % (self.web_root, url))
 
-        shutil.copy2('%s/tmpl/%s.html' % (base_path, vis_type),
-                     '%s/%s_vis.html' % (base_path, url))
+        shutil.copy2('%s/%s.html' % (self.template_dir, vis_type),
+                     '%s/%s_vis.html' % (self.web_root, url))
 
         string = ''
-        with open('%s/%s_vis.html' % (base_path, url), 'r') as f:
+        with open('%s/%s_vis.html' % (self.web_root, url), 'r') as f:
             string = f.read()
             string = string.replace('$$PID_VALUE$$', proc.pid)
             string = string.replace('$$CANVAS_HEIGHT$$', '%d' % (self.num_nodes * 50))
-        with open('%s/%s_vis.html' % (base_path, url), 'w') as f:
+        with open('%s/%s_vis.html' % (self.web_root, url), 'w') as f:
             f.write(string)
-        with open('%s/%s.html' % (base_path, url), 'r') as f:
+        with open('%s/%s.html' % (self.web_root, url), 'r') as f:
             string = f.read()
             string = string.replace('$$VIS_PAGE$$', '%s_vis.html' % proc.pid)
             string = string.replace('$$DETAIL_PAGE$$', '%s_detail.html' % proc.pid)
-        with open('%s/%s.html' % (base_path, url), 'w') as f:
+        with open('%s/%s.html' % (self.web_root, url), 'w') as f:
             f.write(string)
 
     def _visualize(self, proc):
@@ -1197,10 +1203,8 @@ class VizMake:
           "children":[]     // Children
           }
         """
-        base_path = '%svizengine' % self.virtual_working_dir
-
         # Handle CMD page
-        with open('%s/%s.html' % (base_path, proc.cmd_url), 'w') as f:
+        with open('%s/%s.html' % (self.web_root, proc.cmd_url), 'w') as f:
             if proc.type == 'MAKE':
                 f.write(proc.make_exe)
             else:
@@ -1221,7 +1225,7 @@ class VizMake:
         """
         Set up a simple web server for visualization
         """
-        os.chdir("%svizengine" % self.virtual_working_dir)
+        os.chdir(self.web_root)
         httpd = None
         print "Starting web server for visualization ..."
         port = 8000
@@ -1253,12 +1257,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--logdir", default="/tmp")
     parser.add_argument("--no-build", action="store_true")
+    parser.add_argument("--web-root")
     args, extra = parser.parse_known_args()
 
     sys.argv = extra
     sys.argv.insert(0, progname)
 
-    viz = VizMake(args.logdir, args.no_build)
+    viz = VizMake(args.logdir, args.web_root, args.no_build)
     viz.run()
 
 if __name__ == '__main__':
