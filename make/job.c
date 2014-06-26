@@ -1094,10 +1094,10 @@ start_job_command (struct child *child)
 
 		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "CMD-EXE---%s---%s/%s---%d---%s\n", child->file->name, starting_directory,
-					 child->file->cmds->fileinfo.filenm, child->file->cmds->fileinfo.lineno+child->command_line-1, buf);
-		fclose(fp);
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "CMD-EXE---%s---%s/%s---%lu---%s\n", child->file->name, starting_directory,
+           child->file->cmds->fileinfo.filenm, child->file->cmds->fileinfo.lineno+child->command_line-1, buf);
+    fclose(fp);
 
 #endif
     if (end == NULL)
@@ -1830,12 +1830,12 @@ new_job (struct file *file)
     DB (DB_BASIC, (_("Invoking recipe from %s:%lu to update target `%s'.\n"),
                    cmds->fileinfo.filenm, cmds->fileinfo.lineno,
                    c->file->name));
-		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "TARGET---%s---%s/%s---%d\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
-		fclose(fp);
-	}
+    char filenm[BSIZE];
+    snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "TARGET---%s---%s/%s---%lu\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
+    fclose(fp);
+  }
   else {
     DB (DB_BASIC, (_("Invoking builtin recipe to update target `%s'.\n"),
                    c->file->name));
@@ -2228,7 +2228,7 @@ exec_command (char **argv, char **envp, struct child* child)
   FILE* debugfp1 = fopen(logfile, "w");
   fprintf(debugfp1, "PARENT---%d\n", getppid());
   if (child)
-    fprintf(debugfp1, "EXE---%s/%s---%d---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
+    fprintf(debugfp1, "EXE---%s/%s---%lu---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
            child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
   else
     fprintf(debugfp1, "EXE---NULL---0---NULL---%s\n", buf);
@@ -2310,7 +2310,7 @@ exec_command (char **argv, char **envp, struct child* child)
         FILE* debugfp2 = fopen(logfile, "w");
         fprintf(debugfp2, "PARENT---%d\n", getppid());
         if (child)
-          fprintf(debugfp2, "EXE---%s/%s---%d---%s---%s\n", starting_directory,
+          fprintf(debugfp2, "EXE---%s/%s---%lu---%s---%s\n", starting_directory,
                   child->file->cmds->fileinfo.filenm,
                   child->file->cmds->fileinfo.lineno+child->command_line-1,
                   child->file->name, buf);
