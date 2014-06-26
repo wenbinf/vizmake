@@ -3302,14 +3302,14 @@ unsigned long get_usec() {
 void open_log(char** argv) {
   // Open the file dedicated to record dependencies
   // Filename format: vizmake_log-pid-dep
-	char filenm[SSIZE];
-	snprintf(filenm, SSIZE, "touch %s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+	char filenm[BSIZE];
+	snprintf(filenm, BSIZE, "touch %s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
 	system(filenm);
 
   // Open the major file
   // Filename format: vizmake_log-pid-timestamp
-	char logfile[SSIZE];
-	snprintf(logfile, SSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
+	char logfile[BSIZE];
+	snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
 	debugfp = fopen(logfile, "w");
 
   // Trace: PARENT, the parent process pid
