@@ -61,7 +61,4 @@ void open_log(char** argv);
 void vprint_dep();
 
 // Simple buffer management
-// For large buffer
 #define BSIZE 10240
-// For small buffer
-#define SSIZE 256

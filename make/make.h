@@ -400,6 +400,7 @@ void print_spaces (unsigned int);
 char *find_percent (char *);
 const char *find_percent_cached (const char **);
 FILE *open_tmpfile (char **, const char *);
+int string_array_join (const char *, char **, char *, size_t);
 
 #ifndef NO_ARCHIVES
 int ar_name (const char *);
@@ -514,6 +515,8 @@ extern int print_version_flag, print_directory_flag, check_symlink_flag;
 extern int warn_undefined_variables_flag, posix_pedantic, not_parallel;
 extern int second_expansion, clock_skew_detected, rebuilding_makefiles;
 extern int one_shell;
+
+extern char *vizmake_log_dir;
 
 /* can we run commands via 'sh -c xxx' or must we use batch files? */
 extern int batch_mode_shell;

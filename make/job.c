@@ -1086,22 +1086,18 @@ start_job_command (struct child *child)
     argv = construct_command_argv (p, &end, child->file,
                                    child->file->cmds->lines_flags[child->command_line - 1],
                                    &child->sh_batch_file);
-		char buf[BSIZE];
-		buf[0] = '\0';
-		int i;
-		for (i = 0; argv[i]; i++) {
-			strncat(buf, argv[i], BSIZE);
-			strncat(buf, " ", BSIZE);
-			// snprintf(buf, 1024, "%s %s", buf, argv[i]);
-		}
-    
-		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
+                char buf[BSIZE];
+                char filenm[BSIZE];
 
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "CMD-EXE---%s---%s/%s---%d---%s\n", child->file->name, starting_directory,
-					 child->file->cmds->fileinfo.filenm, child->file->cmds->fileinfo.lineno+child->command_line-1, buf);
-		fclose(fp);
+                if (argv != NULL)
+                  string_array_join(" ", argv, buf, BSIZE);
+
+                snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "CMD-EXE---%s---%s/%s---%lu---%s\n", child->file->name, starting_directory,
+           child->file->cmds->fileinfo.filenm, child->file->cmds->fileinfo.lineno+child->command_line-1, buf);
+    fclose(fp);
 
 #endif
     if (end == NULL)
@@ -1834,21 +1830,21 @@ new_job (struct file *file)
     DB (DB_BASIC, (_("Invoking recipe from %s:%lu to update target `%s'.\n"),
                    cmds->fileinfo.filenm, cmds->fileinfo.lineno,
                    c->file->name));
-		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "TARGET---%s---%s/%s---%d\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
-		fclose(fp);
-	}
+    char filenm[BSIZE];
+    snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "TARGET---%s---%s/%s---%lu\n", c->file->name, starting_directory, cmds->fileinfo.filenm, cmds->fileinfo.lineno-1);
+    fclose(fp);
+  }
   else {
     DB (DB_BASIC, (_("Invoking builtin recipe to update target `%s'.\n"),
                    c->file->name));
-		char filenm[BSIZE];
-		snprintf(filenm, BSIZE, "/tmp/vizmake_log-%d-dep", getpid());
-		FILE* fp = fopen(filenm, "a");
-		fprintf(fp, "TARGET---%s\n", c->file->name);
-		fclose(fp);
-	}
+    char filenm[BSIZE];
+    snprintf(filenm, BSIZE, "%s/vizmake_log-%d-dep", vizmake_log_dir, getpid());
+    FILE* fp = fopen(filenm, "a");
+    fprintf(fp, "TARGET---%s\n", c->file->name);
+    fclose(fp);
+  }
 
   start_waiting_job (c);
 
@@ -2120,13 +2116,9 @@ exec_command (char **argv, char **envp, struct child* child)
   /* Run the program.  */
 
   char buf[BSIZE];
-  buf[0] = '\0';
-  for (i = 0; argv[i]; i++) {
-    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-    strncat(buf, argv[i], BSIZE);
-    strncat(buf, " ", BSIZE);
-  }
-  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%d", getpid(),get_usec());
+
+  string_array_join(" ", argv, buf, BSIZE);
+  snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%d", vizmake_log_dir, getpid(),get_usec());
   FILE* debugfp3 = fopen(logfile, "w");
   fprintf(debugfp3, "PARENT---%d\n", getppid());
   if (child)
@@ -2134,8 +2126,8 @@ exec_command (char **argv, char **envp, struct child* child)
            child->file->cmds->fileinfo.fileno+child->command_line-1, child->file->name, buf);
   else
     fprintf(debugfp3, "EXE---NULL---0---NULL---%s\n", buf);
-	fflush(debugfp3);
-	// fclose(debugfp);
+  fflush(debugfp3);
+  // fclose(debugfp);
 
   execve (argv[0], argv, envp);
   perror_with_name ("execve: ", argv[0]);
@@ -2228,25 +2220,20 @@ exec_command (char **argv, char **envp, struct child* child)
   environ = envp;
 
   char buf[BSIZE];
-  buf[0]='\0';
-  int i;
-  for (i = 0; argv[i]; i++) {
-    if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-    strncat(buf, argv[i], BSIZE);
-    strncat(buf, " ", BSIZE);
-    // snprintf(buf, 1024, "%s %s", buf, argv[i]);
-  }
-  char logfile[256];
-  snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+  char logfile[BSIZE];
+
+  string_array_join(" ", argv, buf, BSIZE);
+
+  snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
   FILE* debugfp1 = fopen(logfile, "w");
   fprintf(debugfp1, "PARENT---%d\n", getppid());
   if (child)
-    fprintf(debugfp1, "EXE---%s/%s---%d---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
+    fprintf(debugfp1, "EXE---%s/%s---%lu---%s---%s\n", starting_directory, child->file->cmds->fileinfo.filenm,
            child->file->cmds->fileinfo.lineno+child->command_line-1, child->file->name, buf);
   else
     fprintf(debugfp1, "EXE---NULL---0---NULL---%s\n", buf);
-	fflush(debugfp1);
-	// fclose(debugfp);
+  fflush(debugfp1);
+  // fclose(debugfp);
 
   execvp (argv[0], argv);
 
@@ -2316,25 +2303,22 @@ exec_command (char **argv, char **envp, struct child* child)
 # else
 
         char buf[BSIZE];
-        buf[0]='\0';
-        for (i = 0; argv[i]; i++) {
-          if (strlen(argv[i]) + strlen(buf) > BSIZE) break;
-          strncat(buf, argv[i], BSIZE);
-          strncat(buf, " ", BSIZE);
-        }
-        snprintf(logfile, 256, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
+
+        string_array_join(" ", argv, buf, BSIZE);
+
+        snprintf(logfile, BSIZE, "%s/vizmake_log-%d-%lu", vizmake_log_dir, getpid(), get_usec());
         FILE* debugfp2 = fopen(logfile, "w");
         fprintf(debugfp2, "PARENT---%d\n", getppid());
         if (child)
-          fprintf(debugfp2, "EXE---%s/%s---%d---%s---%s\n", starting_directory,
+          fprintf(debugfp2, "EXE---%s/%s---%lu---%s---%s\n", starting_directory,
                   child->file->cmds->fileinfo.filenm,
                   child->file->cmds->fileinfo.lineno+child->command_line-1,
                   child->file->name, buf);
         else
           fprintf(debugfp2, "EXE---NULL---0---NULL---%s\n", buf);
 
-				fflush(debugfp2);
-				// fclose(debugfp);
+        fflush(debugfp2);
+        // fclose(debugfp);
         execvp (shell, new_argv);
 # endif
         if (errno == ENOENT)

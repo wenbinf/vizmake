@@ -957,3 +957,38 @@ close_stdout (void)
       exit (EXIT_FAILURE);
     }
 }
+
+/* Joins a number of strings together to form one long string, with the
+   separator inserted between each of them. The resulting string is placed
+   in the buffer pointed to by 'out_str'.
+
+   Returns the number of bytes written or a negative value on failure.
+   No more bytes than 'size' will be written, if the ouput is truncated
+   due to this then the number of bytes that should have been written
+   will be returned. */
+int
+string_array_join (const char *separator, char **array,
+		   char *out_str, size_t size)
+{
+  int i;
+  int n;
+  size_t pos = 0;
+
+  if (!out_str || !array || !array[0])
+    return 0;
+
+  if ((pos = snprintf(out_str, size, "%s", array[0])) < 0)
+      return pos;
+
+  for (i = 1; array[i]; i++) {
+    if (pos >= size)
+      break;
+
+    n = snprintf(out_str + pos, size - pos, "%s%s", separator, array[i]);
+    if (n < 0)
+      return n;
+    pos += n;
+  }
+
+  return pos;
+}

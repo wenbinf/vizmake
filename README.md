@@ -23,6 +23,11 @@ Let $(VIZMAKE) be the path of the root directory of vizmake project.
 * Run `python $(VIZMAKE)/vizmake.py` in any project as how you run `make`. Think of `python
   vizmake.py` as a `make` wrapper. You can pass any `make` command line
   arguments to `python $(VIZMAKE)/vizmake.py`. 
+* There are some special command line arguments that vizmake.py will consume before they reach `make`:
+  * --logdir, used for specifying where the log files are written to and read from, default is '/tmp'
+  * --no-build, tell vizmake.py to start processing the logs in --logdir without invoking `make` first.
+  * --web-root, used for specifying where the visualizing files are stored and from where the web server will be started.
+  * --launch-http, tell vizmake.py to start the web server without processing the logs or invoking `make`first.
 * Open web browser to see http://localhost:8000
 
 ## Screenshots
