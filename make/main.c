@@ -3305,6 +3305,10 @@ void open_log(char** argv) {
 	char logfile[SSIZE];
 	snprintf(logfile, SSIZE, "/tmp/vizmake_log-%d-%lu", getpid(), get_usec());
 	debugfp = fopen(logfile, "w");
+	if (!debugfp)
+	{
+		printf("open file %s failed\n", logfile);
+	}
 
   // Trace: PARENT, the parent process pid
   // Format: PARENT---ppid
