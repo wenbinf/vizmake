@@ -14,6 +14,8 @@ Current implementation supports:
   a referenced variable during build time. [Mac OS X and Linux]
 * Analyzing and visualizing dependencies in rules to help figure out what dependencies are potentially missed or are potentially extra. [Linux (rely on strace)]
 
+*** Note: This repository is no longer maintained. ***
+
 ## Installation and Usage
 
 Let $(VIZMAKE) be the path of the root directory of vizmake project.
