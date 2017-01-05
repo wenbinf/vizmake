@@ -1,5 +1,8 @@
 *.py[co]
 
+# Object files
+*.o
+
 # Packages
 *.egg
 *.egg-info
@@ -26,3 +29,32 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 .DS_store
+
+# Autoconf
+*.m4
+.deps/
+m4/
+autom4te.cache/
+Makefile
+Makefile.in
+config.*
+config/*
+configure
+libtool
+stamp-h1
+INSTALL
+ABOUT-NLS
+make
+mkinstalldirs
+depcomp
+missing
+texinfo.tex
+stamp-vti
+version.texi
+compile
+install-sh
+mdate-sh
+
+# Po
+Makevars.template
+POTFILES
